@@ -1,0 +1,15 @@
+fck-fips-buildpacks-nodejs
+Copyright (c) 2026 taha2samy-3 and contributors
+
+Licensed under the Apache License, Version 2.0 (see LICENSE).
+
+The pnpm and pnpm-install buildpacks are derived from the Paketo Buildpacks
+yarn and yarn-install buildpacks (https://github.com/paketo-buildpacks),
+Copyright (c) 2018-Present CloudFoundry.org Foundation, Inc. All Rights
+Reserved, licensed under the Apache License, Version 2.0.
+
+The buildpacks use, and the builder bundles, Paketo Buildpacks
+(Apache-2.0), packit and libnodejs (Apache-2.0). They install software
+under its own licenses: Node.js (MIT), npm (Artistic-2.0), pnpm (MIT),
+OpenSSL (Apache-2.0) and Wolfi packages (various open source licenses,
+recorded in each layer's SBOM).

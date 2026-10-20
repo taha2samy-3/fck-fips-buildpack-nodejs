@@ -5,8 +5,9 @@ name: Release
 #   ghcr.io/<owner>/fck-fips/<buildpack>:X.Y.Z                    buildpackages
 #   ghcr.io/<owner>/fck-fips/builder-nodejs:X.Y.Z                 builder
 #   ghcr.io/<owner>/fck-fips/cnb/<buildpack>:X.Y.Z                .cnb files (oras)
-# Every digest is signed with cosign (keyless) and gets a SLSA provenance
-# attestation; the .cnb files and SHA256SUMS are attached to the GitHub release.
+# Every digest is signed with cosign (keyless), gets SLSA v1.0 Build L3
+# provenance from slsa-github-generator and a GitHub build attestation; the
+# .cnb files and SHA256SUMS are attached to the GitHub release.
 on:
   push:
     tags: ["v*.*.*"]
@@ -75,6 +76,9 @@ jobs:
           VERSION: ${{ steps.version.outputs.version }}
           REGISTRY: ${{ steps.version.outputs.registry }}
         run: |
+          # Reproducible layer timestamps: the same commit gives the same layers.
+          SOURCE_DATE_EPOCH="$(git log -1 --format=%ct)"
+          export SOURCE_DATE_EPOCH
           for img in build run run-distroless; do
             docker buildx build stack \
               --file "stack/${img}.Dockerfile" \
@@ -82,6 +86,7 @@ jobs:
               --tag "${REGISTRY}/${img}:${VERSION}" \
               --label "org.opencontainers.image.version=${VERSION}" \
               --label "org.opencontainers.image.revision=${GITHUB_SHA}" \
+              --build-arg SOURCE_DATE_EPOCH \
               --provenance=false \
               --push
           done
@@ -146,9 +151,45 @@ jobs:
           subject-digest: ${{ needs.publish.outputs[format('{0}_digest', matrix.key)] }}
           push-to-registry: true
 
+  # SLSA v1.0 Build Level 3 provenance. The generator is a reusable workflow
+  # that runs isolated from the build steps above, so they cannot forge or
+  # alter what it signs. It must be referenced by tag, not by commit: it
+  # verifies its own ref when it runs.
+  provenance:
+    name: SLSA L3 ${{ matrix.image }}
+    needs: publish
+    permissions:
+      actions: read
+      id-token: write
+      packages: write
+    strategy:
+      matrix:
+        include:
+          - { image: build, key: build }
+          - { image: run, key: run }
+          - { image: run-distroless, key: run_distroless }
+          - { image: node-engine, key: node_engine }
+          - { image: openssl-fips, key: openssl_fips }
+          - { image: pnpm, key: pnpm }
+          - { image: pnpm-install, key: pnpm_install }
+          - { image: nodejs, key: nodejs }
+          - { image: builder-nodejs, key: builder_nodejs }
+          - { image: cnb/node-engine, key: cnb_node_engine }
+          - { image: cnb/openssl-fips, key: cnb_openssl_fips }
+          - { image: cnb/pnpm, key: cnb_pnpm }
+          - { image: cnb/pnpm-install, key: cnb_pnpm_install }
+          - { image: cnb/nodejs, key: cnb_nodejs }
+    uses: slsa-framework/slsa-github-generator/.github/workflows/generator_container_slsa3.yml@v2.1.0
+    with:
+      image: ${{ needs.publish.outputs.registry }}/${{ matrix.image }}
+      digest: ${{ needs.publish.outputs[format('{0}_digest', matrix.key)] }}
+      registry-username: ${{ github.actor }}
+    secrets:
+      registry-password: ${{ secrets.GITHUB_TOKEN }}
+
   github-release:
     name: GitHub release
-    needs: [publish, attest]
+    needs: [publish, attest, provenance]
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -175,6 +216,13 @@ jobs:
             echo
             echo '```'
             cat digests.txt
+            echo '```'
+            echo
+            echo "Verify the SLSA Build L3 provenance:"
+            echo
+            echo '```sh'
+            echo "slsa-verifier verify-image ${REGISTRY}/builder-nodejs@<digest> \\"
+            echo "  --source-uri github.com/${GITHUB_REPOSITORY} --source-tag ${TAG}"
             echo '```'
             echo
             echo "Verify a signature:"

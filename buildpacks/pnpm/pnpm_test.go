@@ -125,17 +125,25 @@ func TestRequestedPriority(t *testing.T) {
 
 type fakeRegistry struct {
 	packument npm.Packument
+	native    npm.Packument
 	installed []string
 	digests   [][]npm.Digest
 }
 
-func (f *fakeRegistry) Packument(context.Context, string) (npm.Packument, error) {
+func (f *fakeRegistry) Packument(_ context.Context, name string) (npm.Packument, error) {
+	if strings.HasPrefix(name, "@pnpm/exe.") {
+		return f.native, nil
+	}
 	return f.packument, nil
 }
 
 func (f *fakeRegistry) Install(_ context.Context, m npm.Manifest, dest string, extra ...npm.Digest) error {
-	f.installed = append(f.installed, m.Version)
+	f.installed = append(f.installed, m.Name+"@"+m.Version)
 	f.digests = append(f.digests, extra)
+	if strings.HasPrefix(m.Name, "@pnpm/exe.") {
+		os.MkdirAll(dest, 0o755)
+		return os.WriteFile(filepath.Join(dest, "pnpm"), []byte("ELF"), 0o644)
+	}
 	p := filepath.Join(dest, "bin", "pnpm.cjs")
 	os.MkdirAll(filepath.Dir(p), 0o755)
 	return os.WriteFile(p, []byte("#!/usr/bin/env node\n"), 0o644)
@@ -182,7 +190,7 @@ func TestBuildDefaultVersion(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if reg.installed[0] != "10.2.0" {
+	if reg.installed[0] != "pnpm@10.2.0" {
 		t.Errorf("installed %v, want the buildpack default (pnpm 10)", reg.installed)
 	}
 	layer := result.Layers[0]
@@ -218,7 +226,7 @@ func TestBuildOverrideSignalsMismatch(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if reg.installed[0] != "10.2.0" {
+	if reg.installed[0] != "pnpm@10.2.0" {
 		t.Errorf("installed %v", reg.installed)
 	}
 	if len(reg.digests[0]) != 0 {
@@ -279,5 +287,36 @@ func TestParsePackageManager(t *testing.T) {
 		if got := ParsePackageManager(tt.in); got != tt.want {
 			t.Errorf("ParsePackageManager(%q) = %+v", tt.in, got)
 		}
+	}
+}
+
+func TestBuildNativePnpm(t *testing.T) {
+	ctx, reg := setup(t, packit.BuildpackPlanEntry{Name: PlanPNPM, Metadata: map[string]any{"version": "12", "version-source": "BP_PNPM_VERSION"}})
+	ctx.TargetInfo.Arch = "arm64"
+	wrapper := manifest("12.1.0", ">=18.*")
+	wrapper.Bin = json.RawMessage(`{"pnpm":"pnpm","pn":"pn","pnpx":"pnpx","pnx":"pnx"}`)
+	wrapper.OptionalDependencies = map[string]string{"@pnpm/exe.linux-x64": "12.1.0", "@pnpm/exe.linux-arm64": "12.1.0"}
+	reg.packument.Versions["12.1.0"] = wrapper
+	reg.native = npm.Packument{Name: "@pnpm/exe.linux-arm64", Versions: map[string]npm.Manifest{
+		"12.1.0": {Name: "@pnpm/exe.linux-arm64", Version: "12.1.0", Dist: npm.Dist{Integrity: "sha512-native"}},
+	}}
+
+	// Node.js 16 would fail the engines check; the native binary does not need it.
+	result, err := Build(reg, node("v16.0.0"), chronos.DefaultClock, scribe.NewEmitter(&bytes.Buffer{}))(ctx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if want := []string{"pnpm@12.1.0", "@pnpm/exe.linux-arm64@12.1.0"}; !reflect.DeepEqual(reg.installed, want) {
+		t.Errorf("installed %v, want %v", reg.installed, want)
+	}
+	bin := filepath.Join(result.Layers[0].Path, "bin")
+	for _, cmd := range []string{"pnpm", "pn", "pnpx", "pnx"} {
+		target, err := os.Readlink(filepath.Join(bin, cmd))
+		if err != nil || target != "../lib/node_modules/@pnpm/exe.linux-arm64/pnpm" {
+			t.Errorf("%s -> %q (%v)", cmd, target, err)
+		}
+	}
+	if !strings.Contains(result.Layers[0].Metadata["integrity"].(string), "sha512-native") {
+		t.Error("the cache key must cover the native package")
 	}
 }

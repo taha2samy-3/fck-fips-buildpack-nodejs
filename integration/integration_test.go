@@ -99,6 +99,16 @@ func TestApps(t *testing.T) {
 			},
 		},
 		{
+			name: "pnpm 12 native executable",
+			app:  "pnpm",
+			env:  []string{"BP_PNPM_VERSION=12"},
+			check: func(t *testing.T, r response) {
+				if r.MS != 3600000 {
+					t.Errorf("dependency not installed: %+v", r)
+				}
+			},
+		},
+		{
 			name: "distroless run image",
 			app:  "pnpm",
 			args: []string{"--run-image", "%REGISTRY%/run-distroless:%VERSION%"},

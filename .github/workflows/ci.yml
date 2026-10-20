@@ -25,8 +25,9 @@ jobs:
       - uses: jdx/mise-action@fc42bcc7ddbf51124c30f95a877a0c5168a3bfde # v5.2.1
       - name: golangci-lint
         run: golangci-lint run ./...
-      - name: gofmt and go mod tidy leave no diff
+      - name: Module checksums, gofmt and go mod tidy
         run: |
+          go mod verify
           go mod tidy
           test -z "$(gofmt -l .)"
           git diff --exit-code
