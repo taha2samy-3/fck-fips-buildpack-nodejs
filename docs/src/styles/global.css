@@ -1,0 +1,262 @@
+/* Engineering drawing on graph paper, in black and white.
+   Fonts: IBM Plex Sans and IBM Plex Mono, SIL Open Font License 1.1,
+   bundled from @fontsource (no external requests). */
+@import '@fontsource/ibm-plex-sans/400.css';
+@import '@fontsource/ibm-plex-sans/600.css';
+@import '@fontsource/ibm-plex-mono/400.css';
+@import '@fontsource/ibm-plex-mono/600.css';
+
+:root {
+  --paper: #fbfbf8;
+  --ink: #111111;
+  --ink-2: #4a4a4a;
+  --ink-3: #8a8a8a;
+  --grid-minor: rgba(17, 17, 17, 0.045);
+  --grid-major: rgba(17, 17, 17, 0.1);
+  --rule: rgba(17, 17, 17, 0.85);
+  --panel: rgba(251, 251, 248, 0.88);
+  --code-bg: #111111;
+  --code-ink: #f2f2ee;
+  --hatch: rgba(17, 17, 17, 0.07);
+  --minor: 12px;
+  --major: 60px;
+  --sans: 'IBM Plex Sans', system-ui, sans-serif;
+  --mono: 'IBM Plex Mono', ui-monospace, monospace;
+  color-scheme: light;
+}
+
+/* Dark mode: a blueprint in reverse, still only black and white. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    --paper: #0c0c0c;
+    --ink: #ededea;
+    --ink-2: #b4b4b0;
+    --ink-3: #75756f;
+    --grid-minor: rgba(237, 237, 234, 0.045);
+    --grid-major: rgba(237, 237, 234, 0.1);
+    --rule: rgba(237, 237, 234, 0.85);
+    --panel: rgba(12, 12, 12, 0.88);
+    --code-bg: #ededea;
+    --code-ink: #0c0c0c;
+    --hatch: rgba(237, 237, 234, 0.08);
+    color-scheme: dark;
+  }
+}
+:root[data-theme='dark'] {
+  --paper: #0c0c0c;
+  --ink: #ededea;
+  --ink-2: #b4b4b0;
+  --ink-3: #75756f;
+  --grid-minor: rgba(237, 237, 234, 0.045);
+  --grid-major: rgba(237, 237, 234, 0.1);
+  --rule: rgba(237, 237, 234, 0.85);
+  --panel: rgba(12, 12, 12, 0.88);
+  --code-bg: #ededea;
+  --code-ink: #0c0c0c;
+  --hatch: rgba(237, 237, 234, 0.08);
+  color-scheme: dark;
+}
+
+*, *::before, *::after { box-sizing: border-box; }
+
+html { -webkit-text-size-adjust: 100%; }
+
+body {
+  margin: 0;
+  min-height: 100vh;
+  background-color: var(--paper);
+  background-image:
+    linear-gradient(var(--grid-major) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid-major) 1px, transparent 1px),
+    linear-gradient(var(--grid-minor) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid-minor) 1px, transparent 1px);
+  background-size: var(--major) var(--major), var(--major) var(--major), var(--minor) var(--minor), var(--minor) var(--minor);
+  background-position: -1px -1px;
+  color: var(--ink);
+  font: 400 16px/1.65 var(--sans);
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+/* The drawing sheet border, with registration ticks in the corners. */
+.sheet {
+  position: fixed;
+  inset: 10px;
+  border: 1px solid var(--rule);
+  pointer-events: none;
+  z-index: 50;
+}
+.sheet::before, .sheet::after {
+  content: '';
+  position: absolute;
+  width: 18px;
+  height: 18px;
+  border: 0 solid var(--rule);
+}
+.sheet::before { top: 6px; left: 6px; border-top-width: 2px; border-left-width: 2px; }
+.sheet::after { bottom: 6px; right: 6px; border-bottom-width: 2px; border-right-width: 2px; }
+
+a { color: inherit; text-decoration-thickness: 1px; text-underline-offset: 3px; }
+a:hover { text-decoration-thickness: 2px; }
+:focus-visible { outline: 2px dashed var(--ink); outline-offset: 3px; }
+
+h1, h2, h3 { font-family: var(--mono); font-weight: 600; letter-spacing: -0.02em; line-height: 1.2; }
+h1 { font-size: clamp(2rem, 5vw, 3.4rem); margin: 0 0 1rem; }
+h2 { font-size: 1.45rem; margin: 3.5rem 0 1rem; }
+h3 { font-size: 1.05rem; margin: 2rem 0 0.5rem; }
+
+/* Section numbers, like the callouts on a drawing: "§2  Configuration". */
+h2[data-n]::before {
+  content: '§' attr(data-n);
+  display: inline-block;
+  min-width: 3.2ch;
+  margin-right: 0.6ch;
+  padding: 0 0.4ch;
+  border: 1px solid var(--ink);
+  font-size: 0.8em;
+  text-align: center;
+}
+
+p, li { color: var(--ink-2); }
+strong { color: var(--ink); }
+
+code, kbd, pre { font-family: var(--mono); font-size: 0.88em; }
+:not(pre) > code {
+  padding: 0.1em 0.35em;
+  border: 1px solid var(--grid-major);
+  background: var(--panel);
+  color: var(--ink);
+  white-space: nowrap;
+}
+pre {
+  margin: 1.2rem 0;
+  padding: 1rem 1.2rem;
+  overflow-x: auto;
+  background: var(--code-bg);
+  color: var(--code-ink);
+  line-height: 1.6;
+}
+
+.wrap { max-width: 1100px; margin: 0 auto; padding: 0 2.5rem; }
+
+/* Header: a strip of the title block. */
+.top {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  border-bottom: 1px solid var(--rule);
+  background: var(--panel);
+  backdrop-filter: blur(6px);
+}
+.top .wrap { display: flex; align-items: center; gap: 1.5rem; height: 64px; }
+.brand { display: flex; align-items: center; gap: 0.6rem; font-family: var(--mono); font-weight: 600; text-decoration: none; }
+.brand .mark, .brand .mark svg { display: block; width: 32px; height: 32px; }
+.top nav { display: flex; gap: 1.2rem; margin-left: auto; font-family: var(--mono); font-size: 0.85rem; }
+.top nav a { text-decoration: none; padding: 0.2rem 0; border-bottom: 1px solid transparent; }
+.top nav a:hover, .top nav a[aria-current='page'] { border-bottom-color: var(--ink); }
+
+.theme {
+  display: grid;
+  place-items: center;
+  width: 34px;
+  height: 34px;
+  border: 1px solid var(--ink);
+  background: transparent;
+  color: var(--ink);
+  cursor: pointer;
+}
+.theme svg { width: 18px; height: 18px; }
+.theme .moon { display: none; }
+:root[data-theme='dark'] .theme .sun { display: none; }
+:root[data-theme='dark'] .theme .moon { display: block; }
+
+main { padding: 3rem 0 6rem; }
+
+/* Panels sit on the paper like pasted-in details. */
+.panel {
+  position: relative;
+  border: 1px solid var(--ink);
+  background: var(--panel);
+  padding: 1.4rem 1.6rem;
+}
+.panel > .label {
+  position: absolute;
+  top: -0.75em;
+  left: 1rem;
+  padding: 0 0.5rem;
+  background: var(--paper);
+  font: 600 0.72rem/1.5 var(--mono);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.grid { display: grid; gap: 1.5rem; }
+.grid-2 { grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); }
+.grid-3 { grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); }
+
+/* Notes and the important FIPS callout: hatched, the drawing convention for
+   a section cut, so they read as "pay attention". */
+.callout {
+  border: 2px solid var(--ink);
+  padding: 1.1rem 1.4rem;
+  background:
+    repeating-linear-gradient(-45deg, var(--hatch) 0 2px, transparent 2px 9px),
+    var(--panel);
+}
+.callout p { margin: 0.4rem 0; }
+.callout .title { font: 600 0.8rem/1.4 var(--mono); letter-spacing: 0.1em; text-transform: uppercase; color: var(--ink); }
+
+table { width: 100%; border-collapse: collapse; margin: 1rem 0 2rem; font-size: 0.93rem; background: var(--panel); }
+th, td { padding: 0.65rem 0.8rem; border: 1px solid var(--grid-major); text-align: left; vertical-align: top; }
+th { font: 600 0.72rem/1.4 var(--mono); letter-spacing: 0.1em; text-transform: uppercase; border-bottom: 2px solid var(--ink); }
+td code { white-space: normal; word-break: break-word; }
+.tag { display: inline-block; margin: 0 0.3rem 0.2rem 0; padding: 0 0.4rem; border: 1px solid var(--ink-3); font: 0.72rem/1.6 var(--mono); color: var(--ink-2); }
+
+footer { border-top: 1px solid var(--rule); padding: 2rem 0 3rem; font-size: 0.85rem; color: var(--ink-3); }
+footer p { color: var(--ink-3); margin: 0.3rem 0; }
+
+/* ---- Animation ------------------------------------------------------- */
+
+/* Strokes draw themselves: paths carry pathLength="1". */
+.draw path, .draw line, .draw rect, .draw polyline, .draw circle {
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+  animation: draw 1.6s cubic-bezier(0.65, 0, 0.35, 1) forwards;
+  animation-delay: calc(var(--i, 0) * 120ms);
+}
+.draw text { opacity: 0; animation: fade 0.6s ease forwards; animation-delay: calc(0.8s + var(--i, 0) * 120ms); }
+@keyframes draw { to { stroke-dashoffset: 0; } }
+@keyframes fade { to { opacity: 1; } }
+
+/* Typed terminal lines. */
+.type { display: block; width: 0; overflow: hidden; white-space: nowrap; animation: type 1.4s steps(var(--chars, 40)) forwards; animation-delay: var(--delay, 0s); }
+.type.done { width: auto; }
+@keyframes type { to { width: calc(var(--chars, 40) * 1ch); } }
+.cursor::after { content: '▍'; animation: blink 1s steps(1) infinite; }
+@keyframes blink { 50% { opacity: 0; } }
+
+/* Scroll reveal, only when JavaScript is there to undo it. */
+.js .reveal { opacity: 0; transform: translateY(14px); transition: opacity 0.7s ease, transform 0.7s ease; }
+.js .reveal.in { opacity: 1; transform: none; }
+
+/* Crosshair that follows the pointer across the sheet. */
+.crosshair { position: fixed; inset: 0; pointer-events: none; z-index: 1; }
+.crosshair i { position: absolute; background: var(--grid-major); transition: opacity 0.3s; }
+.crosshair .h { left: 0; right: 0; height: 1px; }
+.crosshair .v { top: 0; bottom: 0; width: 1px; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+  .draw path, .draw line, .draw rect, .draw polyline, .draw circle { stroke-dashoffset: 0; }
+  .draw text { opacity: 1; }
+  .type { width: auto; }
+  .js .reveal { opacity: 1; transform: none; }
+  .crosshair { display: none; }
+}
+
+@media (max-width: 760px) {
+  .wrap { padding: 0 1.4rem; }
+  .top .wrap { height: auto; flex-wrap: wrap; padding-top: 0.6rem; padding-bottom: 0.6rem; }
+  .top nav { order: 3; width: 100%; margin-left: 0; overflow-x: auto; gap: 1rem; }
+  .theme { margin-left: auto; }
+  .sheet { inset: 5px; }
+}

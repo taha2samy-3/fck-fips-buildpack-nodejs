@@ -1,0 +1,124 @@
+---
+import '../styles/global.css';
+import { version } from '../lib/buildpacks';
+import logo from '../../public/logo.svg?raw';
+
+interface Props {
+  title: string;
+  description: string;
+}
+
+const { title, description } = Astro.props;
+const base = import.meta.env.BASE_URL;
+const path = Astro.url.pathname;
+const nav = [
+  { href: `${base}`, label: 'Overview' },
+  { href: `${base}configuration/`, label: 'Configuration' },
+  { href: `${base}fips/`, label: 'FIPS' },
+  { href: `${base}supply-chain/`, label: 'Supply chain' },
+];
+const repo = 'https://github.com/taha2samy-3/fck-fips-buildpacks-nodejs';
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title === 'fck-fips' ? 'fck-fips buildpacks' : `${title} · fck-fips buildpacks`}</title>
+    <meta name="description" content={description} />
+    <link rel="icon" type="image/svg+xml" href={`${base}favicon.svg`} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+    <script is:inline>
+      // Apply the saved theme before the first paint. Storage can be blocked;
+      // the system preference applies then.
+      document.documentElement.classList.add('js');
+      try {
+        const saved = localStorage.getItem('theme');
+        if (saved === 'light' || saved === 'dark') document.documentElement.dataset.theme = saved;
+      } catch {}
+    </script>
+  </head>
+  <body>
+    <div class="sheet" aria-hidden="true"></div>
+    <div class="crosshair" aria-hidden="true"><i class="h"></i><i class="v"></i></div>
+
+    <header class="top">
+      <div class="wrap">
+        <a class="brand" href={base}>
+          <span class="mark" set:html={logo} />
+          fck-fips
+        </a>
+        <nav aria-label="Main">
+          {nav.map((item) => (
+            <a href={item.href} aria-current={path === item.href ? 'page' : undefined}>{item.label}</a>
+          ))}
+          <a href={repo}>GitHub ↗</a>
+        </nav>
+        <button class="theme" type="button" aria-label="Switch between light and dark mode">
+          <svg class="sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true">
+            <circle cx="12" cy="12" r="4.5" /><path d="M12 1.5v3M12 19.5v3M1.5 12h3M19.5 12h3M4.6 4.6l2.1 2.1M17.3 17.3l2.1 2.1M4.6 19.4l2.1-2.1M17.3 6.7l2.1-2.1" />
+          </svg>
+          <svg class="moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" aria-hidden="true">
+            <path d="M20 14.5A8.5 8.5 0 0 1 9.5 4 8.5 8.5 0 1 0 20 14.5Z" />
+          </svg>
+        </button>
+      </div>
+    </header>
+
+    <main class="wrap">
+      <slot />
+    </main>
+
+    <footer>
+      <div class="wrap">
+        <p>fck-fips buildpacks {version} · Apache-2.0 · <a href={repo}>source</a> · <a href={`${repo}/blob/main/CHANGELOG.md`}>changelog</a></p>
+        <p>Uses a FIPS 140-3 validated module (CMVP #4985); the buildpacks and the images they build are not FIPS certified.</p>
+        <p>Typeset in IBM Plex Sans and IBM Plex Mono (SIL Open Font License 1.1). Not affiliated with Paketo, Chainguard, the OpenSSL project or NIST.</p>
+      </div>
+    </footer>
+
+    <script>
+      const root = document.documentElement;
+
+      // Theme toggle: flips between light and dark, starting from whatever
+      // is showing now (saved choice or system preference).
+      document.querySelector('.theme')?.addEventListener('click', () => {
+        const dark = root.dataset.theme
+          ? root.dataset.theme === 'dark'
+          : matchMedia('(prefers-color-scheme: dark)').matches;
+        root.dataset.theme = dark ? 'light' : 'dark';
+        try {
+          localStorage.setItem('theme', root.dataset.theme);
+        } catch {}
+      });
+
+      // Sections slide in as they reach the viewport.
+      const reveal = new IntersectionObserver(
+        (entries) => {
+          for (const e of entries) {
+            if (e.isIntersecting) {
+              e.target.classList.add('in');
+              reveal.unobserve(e.target);
+            }
+          }
+        },
+        { rootMargin: '0px 0px -10% 0px' },
+      );
+      document.querySelectorAll('.reveal').forEach((el) => reveal.observe(el));
+
+      // Drafting crosshair under the pointer.
+      const h = document.querySelector<HTMLElement>('.crosshair .h');
+      const v = document.querySelector<HTMLElement>('.crosshair .v');
+      if (h && v && matchMedia('(pointer: fine)').matches) {
+        addEventListener('pointermove', (e) => {
+          h.style.transform = `translateY(${e.clientY}px)`;
+          v.style.transform = `translateX(${e.clientX}px)`;
+        });
+      } else {
+        document.querySelector<HTMLElement>('.crosshair')?.remove();
+      }
+    </script>
+  </body>
+</html>

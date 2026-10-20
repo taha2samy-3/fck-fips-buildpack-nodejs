@@ -1,0 +1,155 @@
+---
+import Base from '../layouts/Base.astro';
+import { buildpacks, version } from '../lib/buildpacks';
+import logo from '../../public/logo.svg?raw';
+
+const base = import.meta.env.BASE_URL;
+const builder = `ghcr.io/taha2samy-3/fck-fips/builder-nodejs:${version}`;
+const lines = [
+  `pack build my-app --builder ${builder}`,
+  `pack build my-app --builder ${builder} --env BP_OPENSSL_FIPS=true`,
+];
+
+// FIG. 1: the stages a build goes through, left to right.
+const stages = [
+  { x: 20, label: 'SOURCE', sub: 'package.json' },
+  { x: 190, label: 'DETECT', sub: 'pnpm · yarn · npm' },
+  { x: 360, label: 'NODE ENGINE', sub: 'signed Wolfi apks' },
+  { x: 530, label: 'INSTALL', sub: 'node_modules' },
+  { x: 700, label: 'OCI IMAGE', sub: 'signed · SBOM' },
+];
+---
+
+<Base title="fck-fips" description="Cloud Native Buildpacks for Node.js on Wolfi: verified Node.js, npm, yarn and pnpm, and an optional FIPS 140-3 validated OpenSSL module.">
+  <section class="hero">
+    <div class="hero-text">
+      <p class="kicker">Cloud Native Buildpacks · Node.js · Wolfi</p>
+      <h1>Node.js images,<br />built to the drawing.</h1>
+      <p class="lead">
+        A builder that turns a Node.js app into an OCI image with <code>pack build</code>. Node.js comes from
+        signed Wolfi packages, every download is verified, and with one variable OpenSSL runs on a
+        <strong>FIPS 140-3 validated module</strong>.
+      </p>
+      <p class="actions">
+        <a class="button" href={`${base}configuration/`}>Configuration →</a>
+        <a class="button ghost" href={`${base}fips/`}>FIPS mode</a>
+      </p>
+    </div>
+
+    <div class="hero-art">
+      <div class="big-mark" set:html={logo} />
+      <table class="titleblock" aria-label="Project data">
+        <tr><th>Project</th><td>fck-fips-buildpacks-nodejs</td></tr>
+        <tr><th>Revision</th><td>{version}</td></tr>
+        <tr><th>Base</th><td>Wolfi (glibc)</td></tr>
+        <tr><th>Crypto</th><td>OpenSSL FIPS Provider 3.1.2 · CMVP #4985</td></tr>
+        <tr><th>Targets</th><td>linux/amd64 · linux/arm64</td></tr>
+        <tr><th>License</th><td>Apache-2.0</td></tr>
+      </table>
+    </div>
+  </section>
+
+  <section class="reveal">
+    <h2 data-n="1">Quick start</h2>
+    <pre class="terminal" aria-label="Commands"><code>{lines.map((l, i) => (
+      <span class="type" style={`--chars:${l.length + 2};--delay:${0.4 + i * 1.6}s`}><span class="prompt">$ </span>{l}</span>
+    ))}<span class="type cursor" style="--chars:2;--delay:3.6s"><span class="prompt">$ </span></span></code></pre>
+    <p>
+      The builder picks the package manager from the lockfile (<code>pnpm-lock.yaml</code>, <code>yarn.lock</code>,
+      <code>package-lock.json</code>), the Node.js version from <code>engines.node</code>, <code>.nvmrc</code> or
+      <code>.node-version</code>, and the start command from <code>scripts.start</code> or a <code>server.js</code>.
+    </p>
+  </section>
+
+  <section class="reveal">
+    <h2 data-n="2">How a build runs</h2>
+    <figure class="panel figure">
+      <span class="label">Fig. 1 · Build pipeline</span>
+      <svg class="draw" viewBox="0 0 860 190" role="img" aria-label="Source, detect, node engine, install, OCI image">
+        <g fill="none" stroke="currentColor" stroke-width="1.5">
+          {stages.map((s, i) => (
+            <rect x={s.x} y="50" width="140" height="70" pathLength="1" style={`--i:${i * 2}`} />
+          ))}
+          {stages.slice(0, -1).map((s, i) => (
+            <path d={`M${s.x + 140} 85 H${s.x + 170} m-8 -5 l8 5 -8 5`} pathLength="1" style={`--i:${i * 2 + 1}`} />
+          ))}
+          <path d="M20 150 V160 H840 V150" stroke-width="1" pathLength="1" style="--i:9" />
+          <path d="M20 160 l6 -3 v6 Z M840 160 l-6 -3 v6 Z" stroke-width="1" pathLength="1" style="--i:9" />
+        </g>
+        <g fill="currentColor" font-family="var(--mono)">
+          {stages.map((s, i) => (
+            <>
+              <text x={s.x + 70} y="82" text-anchor="middle" font-size="13" font-weight="600" style={`--i:${i * 2}`}>{s.label}</text>
+              <text x={s.x + 70} y="102" text-anchor="middle" font-size="11" opacity="0.7" style={`--i:${i * 2}`}>{s.sub}</text>
+            </>
+          ))}
+          <text x="430" y="180" text-anchor="middle" font-size="11" style="--i:10">one pack build · every artifact verified</text>
+          <text x="430" y="30" text-anchor="middle" font-size="11" style="--i:10">BP_OPENSSL_FIPS=true adds the validated module before NODE ENGINE</text>
+        </g>
+      </svg>
+    </figure>
+  </section>
+
+  <section class="reveal">
+    <h2 data-n="3">Buildpacks</h2>
+    <div class="grid grid-2">
+      {buildpacks.map((bp) => (
+        <article class="panel card">
+          <span class="label">{bp.id}</span>
+          <h3>{bp.name}</h3>
+          <p>{bp.description}</p>
+          <p class="meta">{bp.settings.length} settings · <a href={`${base}configuration/#${bp.dir}`}>configure</a></p>
+        </article>
+      ))}
+      <article class="panel card">
+        <span class="label">fckfips/nodejs</span>
+        <h3>The meta buildpack</h3>
+        <p>
+          Orders everything into four groups (pnpm, yarn, npm, plain Node.js) together with Paketo's
+          ca-certificates, watchexec, tini, node-run-script, node-start, npm-start, yarn, yarn-install,
+          yarn-start, procfile, environment-variables and image-labels buildpacks.
+        </p>
+      </article>
+    </div>
+  </section>
+
+  <section class="reveal">
+    <h2 data-n="4">FIPS, stated precisely</h2>
+    <div class="callout">
+      <p class="title">Validated module · not a certified product</p>
+      <p>
+        With <code>BP_OPENSSL_FIPS=true</code> every OpenSSL operation in the image goes through the
+        <strong>OpenSSL FIPS Provider 3.1.2, a FIPS 140-3 validated cryptographic module</strong> (CMVP certificate #4985).
+        The validation belongs to that module. <strong>This project, its buildpacks and the images they build are not FIPS certified.</strong>
+      </p>
+      <p>
+        The module is validated on its tested operational environments; Wolfi is not one of them, so running it here is a port
+        under FIPS 140-3 IG 2.3.A that the operator affirms. <a href={`${base}fips/`}>Details →</a>
+      </p>
+    </div>
+  </section>
+</Base>
+
+<style>
+  .hero { display: grid; grid-template-columns: 1.15fr 0.85fr; gap: 3rem; align-items: center; padding: 2rem 0 1rem; }
+  .kicker { font: 600 0.75rem/1.4 var(--mono); letter-spacing: 0.16em; text-transform: uppercase; color: var(--ink); }
+  .lead { font-size: 1.1rem; max-width: 40rem; }
+  .actions { display: flex; gap: 0.8rem; flex-wrap: wrap; margin-top: 1.6rem; }
+  .button { display: inline-block; padding: 0.7rem 1.2rem; border: 1px solid var(--ink); background: var(--ink); color: var(--paper); font: 600 0.9rem/1 var(--mono); text-decoration: none; transition: transform 0.15s ease, box-shadow 0.15s ease; }
+  .button:hover { transform: translate(-2px, -2px); box-shadow: 4px 4px 0 var(--ink-3); }
+  .button.ghost { background: transparent; color: var(--ink); }
+  .hero-art { display: grid; gap: 1.4rem; justify-items: center; }
+  .big-mark { width: min(240px, 60vw); color: var(--ink); animation: float 6s ease-in-out infinite; }
+  .big-mark :global(svg) { display: block; width: 100%; height: auto; }
+  @keyframes float { 50% { transform: translateY(-8px); } }
+  .titleblock { margin: 0; font: 0.8rem/1.4 var(--mono); border: 2px solid var(--ink); }
+  .titleblock th { width: 6.5rem; border-bottom: 1px solid var(--grid-major); font-size: 0.66rem; }
+  .terminal { position: relative; padding-top: 2.2rem; }
+  .terminal::before { content: '● ● ●'; position: absolute; top: 0.6rem; left: 1rem; font-size: 0.6rem; letter-spacing: 0.3em; opacity: 0.5; }
+  .prompt { opacity: 0.55; }
+  .figure { margin: 0; padding-top: 2rem; }
+  .figure svg { width: 100%; height: auto; color: var(--ink); }
+  .card h3 { margin-top: 0.4rem; }
+  .card .meta { font: 0.8rem/1.4 var(--mono); color: var(--ink-3); }
+  @media (max-width: 860px) { .hero { grid-template-columns: 1fr; } .hero-art { order: -1; } }
+</style>
