@@ -1,0 +1,129 @@
+---
+import Base from '../layouts/Base.astro';
+
+const base = import.meta.env.BASE_URL;
+
+// What each part of a Node.js build is handled by, upstream and here.
+const rows = [
+  { part: 'Order groups', paketo: 'yarn, npm, plain Node.js', here: 'pnpm, yarn, npm, plain Node.js', kind: 'extended' },
+  { part: 'Node.js', paketo: 'paketo-buildpacks/node-engine: Paketo-built tarballs for Ubuntu and UBI stacks', here: 'fckfips/node-engine: Wolfi packages, verified against the signed index; shared libraries in the layer', kind: 'replaced' },
+  { part: 'npm', paketo: 'Shipped inside the Node.js tarball', here: 'The npm release bundled with the chosen Node.js, from the registry, integrity checked, build-only layer', kind: 'replaced' },
+  { part: 'pnpm CLI', paketo: '—', here: 'fckfips/pnpm', kind: 'added' },
+  { part: 'pnpm install', paketo: '—', here: 'fckfips/pnpm-install, derived from paketo-buildpacks/yarn-install', kind: 'added' },
+  { part: 'FIPS 140-3 validated OpenSSL', paketo: '—', here: 'fckfips/openssl-fips (opt-in)', kind: 'added' },
+  { part: 'npm install', paketo: 'paketo-buildpacks/npm-install', here: 'same, unchanged', kind: 'reused' },
+  { part: 'yarn, yarn install', paketo: 'paketo-buildpacks/yarn, yarn-install', here: 'same, unchanged', kind: 'reused' },
+  { part: 'Start command', paketo: 'node-start, npm-start, yarn-start, procfile', here: 'same, unchanged; npm-start also serves pnpm apps', kind: 'reused' },
+  { part: 'Build scripts', paketo: 'paketo-buildpacks/node-run-script', here: 'same, unchanged', kind: 'reused' },
+  { part: 'Utilities', paketo: 'ca-certificates, watchexec, tini, environment-variables, image-labels', here: 'same, unchanged', kind: 'reused' },
+  { part: 'Python for node-gyp', paketo: 'paketo-buildpacks/cpython', here: 'Python, make and a C/C++ compiler in the build image', kind: 'replaced' },
+  { part: 'Base images', paketo: 'Ubuntu Jammy/Noble, UBI', here: 'Wolfi build, run and distroless run images', kind: 'replaced' },
+  { part: 'Release artifacts', paketo: 'Buildpackage images', here: 'Buildpackages, .cnb files, builder and stack images, signed, with SLSA Build L3 provenance', kind: 'extended' },
+];
+
+const groups = [
+  { name: 'pnpm', when: 'pnpm-lock.yaml', list: ['openssl-fips?', 'node-engine', 'pnpm', 'pnpm-install', 'node-run-script?', 'node-start?', 'npm-start?'] },
+  { name: 'yarn', when: 'yarn.lock', list: ['openssl-fips?', 'node-engine', 'yarn', 'yarn-install', 'node-run-script?', 'node-start?', 'yarn-start?'] },
+  { name: 'npm', when: 'package.json', list: ['openssl-fips?', 'node-engine', 'npm-install', 'node-run-script?', 'node-start?', 'npm-start?'] },
+  { name: 'node', when: 'server.js, app.js, …', list: ['openssl-fips?', 'node-engine', 'node-start'] },
+];
+---
+
+<Base title="Built on Paketo" description="How the fck-fips builder extends the Paketo Node.js buildpack: what it reuses, replaces and adds.">
+  <h1>Built on Paketo</h1>
+  <p class="lead">
+    This builder is <a href="https://github.com/paketo-buildpacks/nodejs">Paketo's Node.js buildpack</a> plus more,
+    not a replacement for it. It keeps Paketo's design: the same order groups, the same build plan names
+    (<code>node</code>, <code>npm</code>, <code>node_modules</code>) and most of the same buildpacks, unchanged.
+    On top of that it replaces the parts that tie Paketo to Ubuntu and UBI, and adds what Paketo does not have:
+    pnpm and a FIPS 140-3 validated OpenSSL module.
+  </p>
+
+  <div class="legend" aria-label="Legend">
+    <span class="k reused">reused</span> Paketo buildpack, unchanged
+    <span class="k replaced">replaced</span> same job, done differently
+    <span class="k added">added</span> not in Paketo
+    <span class="k extended">extended</span> Paketo's design, with more
+  </div>
+
+  <section class="reveal">
+    <h2 data-n="1">Part by part</h2>
+    <div class="table-scroll">
+      <table>
+        <thead><tr><th>Part</th><th>paketo-buildpacks/nodejs</th><th>fck-fips</th><th></th></tr></thead>
+        <tbody>
+          {rows.map((r) => (
+            <tr>
+              <td><strong>{r.part}</strong></td>
+              <td>{r.paketo}</td>
+              <td>{r.here}</td>
+              <td><span class={`k ${r.kind}`}>{r.kind}</span></td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="reveal">
+    <h2 data-n="2">pnpm stands on Paketo's yarn-install</h2>
+    <div class="callout">
+      <p class="title">Credit where it is due</p>
+      <p>
+        Paketo has no pnpm buildpack. <strong>fckfips/pnpm-install is derived from{' '}
+        <a href="https://github.com/paketo-buildpacks/yarn-install">paketo-buildpacks/yarn-install</a></strong>, and
+        fckfips/pnpm started from <a href="https://github.com/paketo-buildpacks/yarn">paketo-buildpacks/yarn</a>. The pnpm
+        support depends on their design: separate build and launch <code>node_modules</code> layers, the checksum that
+        decides when to reinstall, the <code>npmrc</code> service bindings, and the symlink chain that points the app at the
+        right layer at launch, restored by an exec.d helper.
+      </p>
+      <p>
+        Both are Apache-2.0, like this project; <code>NOTICE</code> records the origin. <a href={`${base}pnpm/`}>How the pnpm support works →</a>
+      </p>
+    </div>
+  </section>
+
+  <section class="reveal">
+    <h2 data-n="3">Order groups</h2>
+    <p>The first group whose required buildpacks all pass detection builds the app. <code>?</code> marks optional buildpacks; ca-certificates, watchexec, tini, procfile, environment-variables and image-labels are optional in every group.</p>
+    <div class="grid grid-2">
+      {groups.map((g) => (
+        <div class="panel">
+          <span class="label">{g.name} · {g.when}</span>
+          <ol class="order">
+            {g.list.map((b) => <li class={b.endsWith('?') ? 'opt' : ''}>{b.replace('?', '')}</li>)}
+          </ol>
+        </div>
+      ))}
+    </div>
+  </section>
+
+  <section class="reveal">
+    <h2 data-n="4">Why this is compatible</h2>
+    <p>
+      Buildpacks talk to each other through the build plan. node-engine provides <code>node</code> and <code>npm</code>,
+      pnpm-install provides <code>node_modules</code>: the names Paketo's buildpacks require. So npm-install, yarn-install,
+      node-start, npm-start and node-run-script run here exactly as they do on Paketo's own builders, and the
+      environment variables they document work the same. The Go code uses Paketo's{' '}
+      <a href="https://github.com/paketo-buildpacks/packit">packit</a> and{' '}
+      <a href="https://github.com/paketo-buildpacks/libnodejs">libnodejs</a> libraries, so details like{' '}
+      <code>BP_NODE_PROJECT_PATH</code> resolve identically.
+    </p>
+    <p class="fine">This project is independent and not affiliated with or endorsed by Paketo or the Cloud Foundry Foundation.</p>
+  </section>
+</Base>
+
+<style>
+  .lead { max-width: 48rem; font-size: 1.05rem; }
+  .legend { display: flex; flex-wrap: wrap; gap: 0.4rem 1.2rem; align-items: center; margin: 1.5rem 0; font-size: 0.85rem; color: var(--ink-2); }
+  .k { display: inline-block; padding: 0.05rem 0.45rem; font: 600 0.68rem/1.6 var(--mono); letter-spacing: 0.08em; text-transform: uppercase; border: 1px solid var(--ink); }
+  .k.reused { background: transparent; color: var(--ink); border-style: dashed; }
+  .k.replaced { background: transparent; color: var(--ink); }
+  .k.added { background: var(--ink); color: var(--paper); }
+  .k.extended { background: repeating-linear-gradient(-45deg, var(--hatch) 0 2px, transparent 2px 6px); color: var(--ink); }
+  .order { margin: 0.4rem 0 0; padding-left: 1.4rem; font: 0.88rem/1.9 var(--mono); }
+  .order li { color: var(--ink); }
+  .order li.opt { color: var(--ink-3); }
+  .order li.opt::after { content: '  optional'; font-size: 0.75em; }
+  .fine { font-size: 0.85rem; color: var(--ink-3); }
+</style>

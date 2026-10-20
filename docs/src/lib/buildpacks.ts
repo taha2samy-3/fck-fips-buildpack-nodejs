@@ -1,7 +1,7 @@
 // Reads the buildpack.toml files at build time, so the configuration
 // reference is generated from the same source the buildpacks ship with.
 import { readFileSync } from 'node:fs';
-import { fileURLToPath } from 'node:url';
+import { resolve } from 'node:path';
 import { parse } from 'smol-toml';
 
 export interface Setting {
@@ -20,10 +20,12 @@ export interface Buildpack {
   settings: Setting[];
 }
 
-const root = new URL('../../../buildpacks/', import.meta.url);
+// Astro builds from docs/; the repository root is one level up. (import.meta.url
+// would point into the bundled output once pages are prerendered.)
+const repo = resolve(process.cwd(), '..');
 
 function load(dir: string): Buildpack {
-  const raw = readFileSync(fileURLToPath(new URL(`${dir}/buildpack.toml`, root)), 'utf8');
+  const raw = readFileSync(resolve(repo, 'buildpacks', dir, 'buildpack.toml'), 'utf8');
   const toml = parse(raw) as any;
   const settings = (toml.metadata?.configurations ?? []).map((c: any) => ({
     name: c.name,
@@ -57,4 +59,4 @@ export function allSettings(): (Setting & { buildpacks: string[] })[] {
   return [...byName.values()];
 }
 
-export const version = readFileSync(fileURLToPath(new URL('../../../VERSION', import.meta.url)), 'utf8').trim();
+export const version = readFileSync(resolve(repo, 'VERSION'), 'utf8').trim();

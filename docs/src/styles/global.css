@@ -151,7 +151,7 @@ pre {
 .brand { display: flex; align-items: center; gap: 0.6rem; font-family: var(--mono); font-weight: 600; text-decoration: none; }
 .brand .mark, .brand .mark svg { display: block; width: 32px; height: 32px; }
 .top nav { display: flex; gap: 1.2rem; margin-left: auto; font-family: var(--mono); font-size: 0.85rem; }
-.top nav a { text-decoration: none; padding: 0.2rem 0; border-bottom: 1px solid transparent; }
+.top nav a { white-space: nowrap; text-decoration: none; padding: 0.2rem 0; border-bottom: 1px solid transparent; }
 .top nav a:hover, .top nav a[aria-current='page'] { border-bottom-color: var(--ink); }
 
 .theme {
@@ -208,7 +208,10 @@ main { padding: 3rem 0 6rem; }
 table { width: 100%; border-collapse: collapse; margin: 1rem 0 2rem; font-size: 0.93rem; background: var(--panel); }
 th, td { padding: 0.65rem 0.8rem; border: 1px solid var(--grid-major); text-align: left; vertical-align: top; }
 th { font: 600 0.72rem/1.4 var(--mono); letter-spacing: 0.1em; text-transform: uppercase; border-bottom: 2px solid var(--ink); }
-td code { white-space: normal; word-break: break-word; }
+td code { white-space: normal; overflow-wrap: anywhere; }
+td:first-child code { white-space: nowrap; overflow-wrap: normal; }
+.table-scroll { overflow-x: auto; margin: 1rem 0 2rem; }
+.table-scroll table { margin: 0; min-width: 640px; }
 .tag { display: inline-block; margin: 0 0.3rem 0.2rem 0; padding: 0 0.4rem; border: 1px solid var(--ink-3); font: 0.72rem/1.6 var(--mono); color: var(--ink-2); }
 
 footer { border-top: 1px solid var(--rule); padding: 2rem 0 3rem; font-size: 0.85rem; color: var(--ink-3); }

@@ -1,0 +1,148 @@
+---
+import Base from '../layouts/Base.astro';
+import { buildpacks, allSettings, version } from '../lib/buildpacks';
+
+const settings = allSettings();
+const buildTime = settings.filter((s) => s.build);
+const launchTime = settings.filter((s) => s.launch);
+
+// Paketo buildpacks bundled in the builder. Names and meanings are taken from
+// each buildpack's README; follow the links for the full story.
+const paketo = [
+  { name: 'BP_NODE_RUN_SCRIPTS', bp: 'node-run-script', when: 'build', what: 'Comma-separated package.json scripts to run during the build, e.g. build or build,test.' },
+  { name: 'BP_LAUNCHPOINT', bp: 'node-start', when: 'build', what: 'File node-start runs, e.g. ./src/server.js, instead of server.js, app.js, main.js or index.js.' },
+  { name: 'BP_VERIFY_LAUNCHPOINT', bp: 'node-start', when: 'build', what: 'Fail the build if the launch point file does not exist.' },
+  { name: 'BP_NPM_START_SCRIPT', bp: 'npm-start', when: 'build', what: 'Name of the package.json script to start the app with, instead of start.' },
+  { name: 'BP_LIVE_RELOAD_ENABLED', bp: 'node-start, npm-start, yarn-start', when: 'build', what: 'Add a reloadable process that restarts the app on file changes (uses watchexec).' },
+  { name: 'BP_LAUNCH_WITH_TINI', bp: 'node-start, npm-start', when: 'build', what: 'Start the app under tini, which reaps zombie processes and forwards signals.' },
+  { name: 'BP_PROCFILE_DEFAULT_PROCESS', bp: 'procfile', when: 'build', what: 'Default process type when a Procfile defines several.' },
+  { name: 'BP_EMBED_CERTS', bp: 'ca-certificates', when: 'build', what: 'Embed CA certificates from ca-certificates bindings into the image.' },
+  { name: 'BP_RUNTIME_CERT_BINDING_DISABLED', bp: 'ca-certificates', when: 'build', what: 'Do not add the helper that loads CA certificate bindings at runtime.' },
+  { name: 'BPE_DEFAULT_<NAME>, BPE_OVERRIDE_<NAME>, BPE_APPEND_<NAME>, BPE_PREPEND_<NAME>', bp: 'environment-variables', when: 'build', what: 'Bake an environment variable into the image, with default, override, append or prepend semantics.' },
+  { name: 'BP_IMAGE_LABELS, BP_OCI_*', bp: 'image-labels', when: 'build', what: 'Add labels to the image (BP_OCI_SOURCE, BP_OCI_REVISION, BP_OCI_LICENSES, ...).' },
+];
+
+const internal = [
+  { name: 'BPI_OPENSSL_FIPS_CONF', from: 'openssl-fips', what: 'Path of the generated openssl.cnf; node-engine uses it to verify FIPS mode at build time.' },
+  { name: 'BPI_OPENSSL_FIPS_MODULES', from: 'openssl-fips', what: 'Directory holding fips.so.' },
+  { name: 'BPI_NODE_FORCE_FIPS', from: 'node-engine', what: 'Tells the launch helper to add --force-fips to NODE_OPTIONS.' },
+  { name: 'BPI_PNPM_VERSION_MISMATCH', from: 'pnpm', what: 'Set when BP_PNPM_VERSION installed a different pnpm than packageManager pins; pnpm-install then relaxes pnpm\'s own version check.' },
+];
+---
+
+<Base title="Configuration" description="Every environment variable the fck-fips buildpacks read, at build and at launch.">
+  <h1>Configuration</h1>
+  <p class="lead">
+    Pass variables to <code>pack build</code> with <code>--env NAME=value</code>, or commit them in{' '}
+    <code>project.toml</code>. Launch-time variables are set on the running container. The tables for the
+    fck-fips buildpacks are generated from their <code>buildpack.toml</code> files (version {version}), so
+    they always match what ships.
+  </p>
+
+  <section class="reveal">
+    <h2 data-n="1">Build time</h2>
+    <div class="table-scroll">
+    <table>
+      <thead><tr><th>Variable</th><th>Default</th><th>What it does</th><th>Read by</th></tr></thead>
+      <tbody>
+        {buildTime.map((s) => (
+          <tr>
+            <td><code>{s.name}</code></td>
+            <td>{s.default ? <code>{s.default}</code> : '—'}</td>
+            <td>{s.description}</td>
+            <td>{s.buildpacks.map((b) => <span class="tag">{b.replace('fckfips/', '')}</span>)}</td>
+          </tr>
+        ))}
+      </tbody>
+    </table></div>
+  </section>
+
+  <section class="reveal">
+    <h2 data-n="2">Launch time</h2>
+    <p>Read by node-engine's launch helper each time the container starts; it only adds to <code>NODE_OPTIONS</code>, never overrides what you set.</p>
+    <div class="table-scroll">
+    <table>
+      <thead><tr><th>Variable</th><th>Default</th><th>What it does</th></tr></thead>
+      <tbody>
+        {launchTime.map((s) => (
+          <tr>
+            <td><code>{s.name}</code></td>
+            <td>{s.default ? <code>{s.default}</code> : '—'}</td>
+            <td>{s.description}</td>
+          </tr>
+        ))}
+        <tr><td><code>OPTIMIZE_MEMORY</code></td><td>set by <code>BP_NODE_OPTIMIZE_MEMORY</code></td><td>Adds <code>--max-old-space-size</code> at 75% of <code>MEMORY_AVAILABLE</code> or the cgroup limit.</td></tr>
+        <tr><td><code>NODE_OPTIONS</code></td><td><code>--use-openssl-ca</code></td><td>Your options are kept; the helper appends <code>--use-openssl-ca</code>, <code>--force-fips</code>, the heap size or <code>--inspect</code> only when they are missing.</td></tr>
+        <tr><td><code>NODE_ENV</code></td><td><code>production</code></td><td>Default for the running app.</td></tr>
+      </tbody>
+    </table></div>
+  </section>
+
+  <section class="reveal">
+    <h2 data-n="3">By buildpack</h2>
+    {buildpacks.map((bp) => (
+      <div class="panel bp" id={bp.dir}>
+        <span class="label">{bp.id}</span>
+        <p>{bp.description}</p>
+        <ul>
+          {bp.settings.map((s) => <li><code>{s.name}</code> {s.description}</li>)}
+        </ul>
+      </div>
+    ))}
+  </section>
+
+  <section class="reveal">
+    <h2 data-n="4">Paketo buildpacks in the builder</h2>
+    <p>These come from the upstream Paketo buildpacks the meta buildpack bundles. See each buildpack's README for details.</p>
+    <div class="table-scroll">
+    <table>
+      <thead><tr><th>Variable</th><th>What it does</th><th>Buildpack</th></tr></thead>
+      <tbody>
+        {paketo.map((p) => (
+          <tr>
+            <td><code>{p.name}</code></td>
+            <td>{p.what}</td>
+            <td>{p.bp.split(', ').map((b) => <a class="tag" href={`https://github.com/paketo-buildpacks/${b}`}>{b}</a>)}</td>
+          </tr>
+        ))}
+      </tbody>
+    </table></div>
+  </section>
+
+  <section class="reveal">
+    <h2 data-n="5">project.toml</h2>
+    <pre><code>{`[_]
+schema-version = "0.2"
+
+[[io.buildpacks.build.env]]
+name = "BP_OPENSSL_FIPS"
+value = "true"
+
+[[io.buildpacks.build.env]]
+name = "BP_NODE_VERSION"
+value = "24"
+
+[[io.buildpacks.build.env]]
+name = "BP_NODE_RUN_SCRIPTS"
+value = "build"`}</code></pre>
+  </section>
+
+  <section class="reveal">
+    <h2 data-n="6">Internal variables</h2>
+    <p>Buildpacks set these for each other. They are documented so you can recognise them in build logs; do not set them yourself.</p>
+    <div class="table-scroll">
+    <table>
+      <thead><tr><th>Variable</th><th>Set by</th><th>Purpose</th></tr></thead>
+      <tbody>
+        {internal.map((v) => <tr><td><code>{v.name}</code></td><td><span class="tag">{v.from}</span></td><td>{v.what}</td></tr>)}
+      </tbody>
+    </table></div>
+  </section>
+</Base>
+
+<style>
+  .lead { max-width: 46rem; font-size: 1.05rem; }
+  .bp { margin: 2rem 0; }
+  .bp ul { padding-left: 1.1rem; }
+  .bp li { margin: 0.35rem 0; }
+</style>

@@ -27,11 +27,11 @@ const stages = [
       <h1>Node.js images,<br />built to the drawing.</h1>
       <p class="lead">
         A builder that turns a Node.js app into an OCI image with <code>pack build</code>. Node.js comes from
-        signed Wolfi packages, every download is verified, and with one variable OpenSSL runs on a
+        signed Wolfi packages, every download is verified, and with one variable OpenSSL runs on a{' '}
         <strong>FIPS 140-3 validated module</strong>.
       </p>
       <p class="actions">
-        <a class="button" href={`${base}configuration/`}>Configuration →</a>
+        <a class="button" href={`${base}configuration/`}>Configuration →</a>{' '}
         <a class="button ghost" href={`${base}fips/`}>FIPS mode</a>
       </p>
     </div>
@@ -55,8 +55,8 @@ const stages = [
       <span class="type" style={`--chars:${l.length + 2};--delay:${0.4 + i * 1.6}s`}><span class="prompt">$ </span>{l}</span>
     ))}<span class="type cursor" style="--chars:2;--delay:3.6s"><span class="prompt">$ </span></span></code></pre>
     <p>
-      The builder picks the package manager from the lockfile (<code>pnpm-lock.yaml</code>, <code>yarn.lock</code>,
-      <code>package-lock.json</code>), the Node.js version from <code>engines.node</code>, <code>.nvmrc</code> or
+      The builder picks the package manager from the lockfile (<code>pnpm-lock.yaml</code>, <code>yarn.lock</code>,{' '}
+      <code>package-lock.json</code>), the Node.js version from <code>engines.node</code>, <code>.nvmrc</code> or{' '}
       <code>.node-version</code>, and the start command from <code>scripts.start</code> or a <code>server.js</code>.
     </p>
   </section>
@@ -109,6 +109,7 @@ const stages = [
           ca-certificates, watchexec, tini, node-run-script, node-start, npm-start, yarn, yarn-install,
           yarn-start, procfile, environment-variables and image-labels buildpacks.
         </p>
+        <p class="meta"><a href={`${base}paketo/`}>what is reused, replaced and added</a></p>
       </article>
     </div>
   </section>
@@ -118,7 +119,7 @@ const stages = [
     <div class="callout">
       <p class="title">Validated module · not a certified product</p>
       <p>
-        With <code>BP_OPENSSL_FIPS=true</code> every OpenSSL operation in the image goes through the
+        With <code>BP_OPENSSL_FIPS=true</code> every OpenSSL operation in the image goes through the{' '}
         <strong>OpenSSL FIPS Provider 3.1.2, a FIPS 140-3 validated cryptographic module</strong> (CMVP certificate #4985).
         The validation belongs to that module. <strong>This project, its buildpacks and the images they build are not FIPS certified.</strong>
       </p>
@@ -151,5 +152,5 @@ const stages = [
   .figure svg { width: 100%; height: auto; color: var(--ink); }
   .card h3 { margin-top: 0.4rem; }
   .card .meta { font: 0.8rem/1.4 var(--mono); color: var(--ink-3); }
-  @media (max-width: 860px) { .hero { grid-template-columns: 1fr; } .hero-art { order: -1; } }
+  @media (max-width: 860px) { .hero { grid-template-columns: 1fr; } .hero-art { order: -1; } .big-mark { width: 150px; } }
 </style>

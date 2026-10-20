@@ -1,0 +1,93 @@
+---
+import Base from '../layouts/Base.astro';
+import { version } from '../lib/buildpacks';
+
+const builder = `ghcr.io/taha2samy-3/fck-fips/builder-nodejs:${version}`;
+const steps = [
+  ['Detect', 'BP_OPENSSL_FIPS=true makes openssl-fips pass detection, and makes node-engine require it. A builder without openssl-fips fails here instead of building an image without the module.'],
+  ['Install the module', 'openssl-fips downloads openssl-provider-fips-3.1.2 from taha2samy-3.github.io/node/apk and checks it against the signed index (embedded key), its control checksum and its data hash. fips.so and fipsmodule.cnf are used exactly as built; nothing edits them.'],
+  ['Configure OpenSSL', 'A generated openssl.cnf loads only the FIPS and base providers, sets default_properties = fips=yes, requires TLS 1.2 or later, and turns provider errors into fatal errors (config_diagnostics = 1). OPENSSL_CONF and OPENSSL_MODULES point at it at launch.'],
+  ['Verify at build time', 'node-engine runs the installed node under that configuration with --force-fips: crypto.getFips() must be 1, SHA-256 must work and MD5 must be refused. If not, the build fails.'],
+  ['Run', 'At every start the module runs its known-answer self tests and integrity check. node starts with --force-fips; a module that fails its checks stops node from starting.'],
+];
+---
+
+<Base title="FIPS" description="How the fck-fips buildpacks use the FIPS 140-3 validated OpenSSL FIPS Provider 3.1.2, and what that does and does not mean.">
+  <h1>FIPS 140-3</h1>
+
+  <div class="callout">
+    <p class="title">Validated, not certified</p>
+    <p>
+      The cryptography comes from the <strong>OpenSSL FIPS Provider 3.1.2</strong>, a <strong>FIPS 140-3 validated
+      cryptographic module</strong>: <a href="https://csrc.nist.gov/projects/cryptographic-module-validation-program/certificate/4985">CMVP certificate #4985</a>.
+      Validation is a property of that module.
+    </p>
+    <p>
+      <strong>These buildpacks and the images they build are not FIPS certified, and no claim is made that they are.</strong>{' '}
+      Say "uses a FIPS 140-3 validated cryptographic module", not "FIPS certified" or "FIPS compliant".
+    </p>
+  </div>
+
+  <section class="reveal">
+    <h2 data-n="1">Turn it on</h2>
+    <pre><code>{`pack build my-app --builder ${builder} \\
+  --env BP_OPENSSL_FIPS=true`}</code></pre>
+    <p>
+      Approved mode applies at launch. Install tools and build scripts often use MD5 or MD4 for non-security hashing
+      (webpack 4, some caches), so the build itself runs without it unless you add <code>BP_OPENSSL_FIPS_BUILD=true</code>.
+    </p>
+  </section>
+
+  <section class="reveal">
+    <h2 data-n="2">What happens</h2>
+    <ol class="steps">
+      {steps.map(([title, text], i) => (
+        <li class="panel" style={`--i:${i}`}>
+          <span class="label">Step {i + 1}</span>
+          <h3>{title}</h3>
+          <p>{text}</p>
+        </li>
+      ))}
+    </ol>
+  </section>
+
+  <section class="reveal">
+    <h2 data-n="3">Check a running container</h2>
+    <pre><code>{`docker run --rm my-app node -p "require('crypto').getFips()"          # 1
+docker run --rm my-app node -e "require('crypto').createHash('md5')"  # error: unsupported
+docker inspect my-app --format '{{ index .Config.Labels "io.fckfips.openssl-fips.certificate" }}'  # #4985`}</code></pre>
+    <p>The image also carries <code>io.fckfips.openssl-fips.module</code> and <code>io.fckfips.openssl-fips.package</code> labels, and the provider layer has its own SBOM.</p>
+  </section>
+
+  <section class="reveal">
+    <h2 data-n="4">Operational environment</h2>
+    <p>
+      A FIPS 140-3 certificate lists the operational environments the module was tested on. For #4985 those are
+      Ubuntu 22.04, Debian 11, FreeBSD 13.1, Windows 10 and macOS 11 on x86_64, and macOS 11 on Apple M1. Wolfi is not
+      among them, and Linux on ARM is not tested at all.
+    </p>
+    <p>
+      Running the unchanged module on Wolfi is a port to an untested environment under FIPS 140-3 Implementation
+      Guidance 2.3.A: the CMVP makes no statement about it, and the operator affirms that the module is used unchanged.
+      That applies to linux/amd64 and, more strongly, to linux/arm64. Whether this is acceptable is your organisation's
+      decision.
+    </p>
+  </section>
+
+  <section class="reveal">
+    <h2 data-n="5">How the module package is built</h2>
+    <p>
+      The provider package is built in <a href="https://github.com/taha2samy-3/node">taha2samy-3/node</a> with melange,
+      following section 11.1 of the security policy: the openssl-3.1.2 source named in the policy, checked against its
+      SHA-256; <code>./Configure enable-fips</code>, <code>make</code>, <code>make install_fips</code> with no other options
+      or patches; <code>fipsmodule.cnf</code> written only by <code>openssl fipsinstall -pedantic</code>; <code>fips.so</code>{' '}
+      never stripped. Packages are signed, immutable once published, and change only when NIST lists a new certificate.
+    </p>
+  </section>
+</Base>
+
+<style>
+  .steps { list-style: none; padding: 0; display: grid; gap: 1.6rem; counter-reset: step; }
+  .steps li { padding-top: 1.6rem; }
+  .steps h3 { margin-top: 0; }
+</style>

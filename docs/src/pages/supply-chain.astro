@@ -1,0 +1,91 @@
+---
+import Base from '../layouts/Base.astro';
+import { version } from '../lib/buildpacks';
+
+const registry = 'ghcr.io/taha2samy-3/fck-fips';
+const repo = 'taha2samy-3/fck-fips-buildpacks-nodejs';
+
+const verified = [
+  ['Node.js and its libraries', 'Wolfi', 'APKINDEX signature (RSA/SHA-256, embedded Wolfi key) → control segment SHA-1 = index checksum → package signature → data segment SHA-256 = datahash'],
+  ['OpenSSL FIPS provider', 'taha2samy-3.github.io/node/apk', 'Same chain, against the embedded repository key'],
+  ['npm', 'npm registry', 'sha512 integrity; the version Node.js ships with, from nodejs.org/dist/index.json'],
+  ['pnpm', 'npm registry', 'sha512 integrity, plus the packageManager hash when package.json pins one'],
+];
+
+const artifacts = [
+  ['builder-nodejs', 'The builder: lifecycle, build image reference, every buildpack'],
+  ['nodejs', 'Meta buildpack (buildpackage image)'],
+  ['node-engine, openssl-fips, pnpm, pnpm-install', 'Buildpackage images, linux/amd64 + linux/arm64'],
+  ['cnb/<buildpack>', 'The same buildpacks as .cnb files, pushed with oras'],
+  ['build, run, run-distroless', 'Stack images'],
+];
+---
+
+<Base title="Supply chain" description="What the fck-fips buildpacks verify, how releases are built and signed, and how to check them.">
+  <h1>Supply chain</h1>
+  <p class="lead">
+    Two halves: what the buildpacks verify while they build your app, and how the buildpacks themselves are released,
+    as signed OCI artifacts with SLSA v1.0 Build Level 3 provenance.
+  </p>
+
+  <section class="reveal">
+    <h2 data-n="1">Verified at build time</h2>
+    <div class="table-scroll">
+    <table>
+      <thead><tr><th>Artifact</th><th>Source</th><th>Checks</th></tr></thead>
+      <tbody>{verified.map(([a, s, c]) => <tr><td><strong>{a}</strong></td><td>{s}</td><td>{c}</td></tr>)}</tbody>
+    </table></div>
+    <p>Nothing is extracted before it is verified, and extraction cannot write outside the layer: every write goes through an <code>os.Root</code>.</p>
+  </section>
+
+  <section class="reveal">
+    <h2 data-n="2">Released artifacts</h2>
+    <p>All under <code>{registry}/</code>, tagged with the release version ({version}):</p>
+    <div class="table-scroll">
+    <table>
+      <thead><tr><th>Repository</th><th>Contents</th></tr></thead>
+      <tbody>{artifacts.map(([r, c]) => <tr><td><code>{r}</code></td><td>{c}</td></tr>)}</tbody>
+    </table></div>
+  </section>
+
+  <section class="reveal">
+    <h2 data-n="3">How a release is built</h2>
+    <div class="grid grid-2">
+      <div class="panel"><span class="label">Trigger</span><p>Only a pushed tag <code>vX.Y.Z</code> releases, and only if <code>CHANGELOG.md</code> has a <code>## [X.Y.Z]</code> section, which becomes the release notes.</p></div>
+      <div class="panel"><span class="label">Build</span><p>GitHub-hosted, ephemeral runners. Actions pinned by commit SHA, tools by <code>mise.toml</code>, base images by digest; stack layers are reproducible from the commit time.</p></div>
+      <div class="panel"><span class="label">Provenance</span><p>SLSA v1.0 Build L3 from <a href="https://github.com/slsa-framework/slsa-github-generator">slsa-github-generator</a>, generated in an isolated reusable workflow the build cannot tamper with, plus a GitHub build attestation.</p></div>
+      <div class="panel"><span class="label">Signatures</span><p>cosign keyless signing with the workflow's GitHub OIDC identity: no long-lived keys exist to leak.</p></div>
+    </div>
+  </section>
+
+  <section class="reveal">
+    <h2 data-n="4">Verify before you use</h2>
+    <pre><code>{`# SLSA Build L3 provenance
+slsa-verifier verify-image ${registry}/builder-nodejs@sha256:<digest> \\
+  --source-uri github.com/${repo} --source-tag v${version}
+
+# GitHub attestation
+gh attestation verify oci://${registry}/builder-nodejs:${version} --repo ${repo}
+
+# cosign signature
+cosign verify ${registry}/builder-nodejs:${version} \\
+  --certificate-identity-regexp 'https://github.com/${repo}/.github/workflows/release.yml@.*' \\
+  --certificate-oidc-issuer https://token.actions.githubusercontent.com
+
+# a .cnb file
+oras pull ${registry}/cnb/node-engine:${version}`}</code></pre>
+  </section>
+
+  <section class="reveal">
+    <h2 data-n="5">Keeping dependencies current</h2>
+    <p>
+      Renovate (<code>config:best-practices</code>) updates Go modules, the Paketo buildpacks in the meta buildpack,
+      the lifecycle, base image digests, GitHub Actions SHAs and the tools in <code>mise.toml</code>. Updates wait three
+      days after release, so a compromised version is likely withdrawn before it arrives; security fixes skip the wait.
+    </p>
+  </section>
+</Base>
+
+<style>
+  .lead { max-width: 46rem; font-size: 1.05rem; }
+</style>

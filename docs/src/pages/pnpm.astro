@@ -1,0 +1,142 @@
+---
+import Base from '../layouts/Base.astro';
+
+const base = import.meta.env.BASE_URL;
+
+const versionSources = [
+  ['1', 'BP_PNPM_VERSION', 'A version, range or dist-tag: 10, 10.18.3, ^9.1, latest.'],
+  ['2', 'packageManager', 'From package.json, e.g. pnpm@10.18.3+sha512.…. The exact version is installed, and the tarball must match the hash too.'],
+  ['3', 'lockfileVersion', 'Only where it names one pnpm major: 5.x → pnpm 7, 6.x → pnpm 8. Lockfile 9.0 is written by pnpm 9, 10 and 11 alike, so it falls through.'],
+  ['4', 'default', 'pnpm 10, which runs on Node.js 18.12 and later.'],
+];
+
+const cacheKey = [
+  'pnpm-lock.yaml, package.json, pnpm-workspace.yaml, .npmrc, .pnpmfile.cjs',
+  'the output of pnpm config list',
+  'the pnpm and Node.js versions (native addons are built against Node.js\'s ABI)',
+  'production or development install, the build-script and version-check settings',
+];
+
+const changes = [
+  ['Store', 'The pnpm content-addressable store lives in a cache layer, so a rebuild downloads only what changed, and the launch install after the build install runs offline.'],
+  ['Cache key', 'Adds pnpm-workspace.yaml, .npmrc, .pnpmfile.cjs and the pnpm version to what decides a reinstall.'],
+  ['Build scripts', 'pnpm 10+ blocks dependency install scripts unless approved. Approval is left to the project (onlyBuiltDependencies, allowBuilds, …); only a project that configures none gets --dangerously-allow-all-builds, so native addons such as bcrypt or sharp are built.'],
+  ['Non-interactive', 'Installs run with CI=true, so pnpm never waits at a prompt.'],
+  ['pnpm at launch', 'Off by default (BP_PNPM_IN_LAUNCH=true puts it back): the start command runs node, not pnpm.'],
+  ['Version check', 'When BP_PNPM_VERSION installs a different pnpm than packageManager pins, pnpm\'s own check is relaxed for every pnpm command (pnpm 9–10 package-manager-strict, pnpm 11 pmOnFail) instead of failing the build.'],
+];
+---
+
+<Base title="pnpm" description="How the fck-fips builder supports pnpm: version selection, installation, caching and launch.">
+  <h1>pnpm</h1>
+  <p class="lead">
+    Two buildpacks handle pnpm apps: <strong>fckfips/pnpm</strong> installs the pnpm CLI, and{' '}
+    <strong>fckfips/pnpm-install</strong> installs the app's dependencies with it. The pnpm group runs when the app has a{' '}
+    <code>pnpm-lock.yaml</code> next to its <code>package.json</code>.
+  </p>
+  <div class="callout">
+    <p class="title">Derived from Paketo yarn-install</p>
+    <p>
+      pnpm-install is built on <a href="https://github.com/paketo-buildpacks/yarn-install">paketo-buildpacks/yarn-install</a>:
+      its layer layout, reinstall checksum, service bindings and launch-time symlink helper come from there, adapted to pnpm.
+      See <a href={`${base}paketo/`}>Built on Paketo</a>.
+    </p>
+  </div>
+
+  <section class="reveal">
+    <h2 data-n="1">Which pnpm</h2>
+    <p>The first source that names a version wins. Every published version can be installed: it is resolved against the npm registry (or <code>BP_NPM_REGISTRY</code>) and checked against the registry's sha512 integrity.</p>
+    <div class="table-scroll">
+      <table>
+        <thead><tr><th>#</th><th>Source</th><th>Meaning</th></tr></thead>
+        <tbody>{versionSources.map(([n, s, m]) => <tr><td>{n}</td><td><code>{s}</code></td><td>{m}</td></tr>)}</tbody>
+      </table>
+    </div>
+    <ul>
+      <li><strong>Node.js compatibility</strong> is checked before anything is installed: pnpm 11 needs Node.js 22.13 or later, and asking for it with an older Node.js fails with a message saying which variable to change.</li>
+      <li><strong>pnpm 12</strong> is a native executable. The buildpack installs the glibc build for the target architecture (<code>@pnpm/exe.linux-x64</code> or <code>linux-arm64</code>) at exactly the version the pnpm package pins, and links <code>pnpm</code>, <code>pn</code>, <code>pnpx</code> and <code>pnx</code> to it.</li>
+    </ul>
+  </section>
+
+  <section class="reveal">
+    <h2 data-n="2">Layers</h2>
+    <figure class="panel figure">
+      <span class="label">Fig. 2 · pnpm layers and links</span>
+      <svg class="draw" viewBox="0 0 860 300" role="img" aria-label="The pnpm store cache layer feeds the build-modules and launch-modules layers; the app's node_modules links to the launch layer through a link in /tmp">
+        <g fill="none" stroke="currentColor" stroke-width="1.5">
+          <rect x="20" y="40" width="190" height="80" pathLength="1" style="--i:0" />
+          <rect x="330" y="20" width="200" height="70" pathLength="1" style="--i:1" />
+          <rect x="330" y="140" width="200" height="70" pathLength="1" style="--i:2" />
+          <rect x="650" y="140" width="190" height="70" pathLength="1" style="--i:3" stroke-dasharray="6 4" />
+          <rect x="650" y="240" width="190" height="50" pathLength="1" style="--i:4" />
+          <path d="M210 70 H300 V55 H322 m-8 -5 l8 5 -8 5" pathLength="1" style="--i:5" />
+          <path d="M210 95 H300 V175 H322 m-8 -5 l8 5 -8 5" pathLength="1" style="--i:5" />
+          <path d="M745 240 V218 m-5 8 l5 -8 5 8" pathLength="1" style="--i:6" />
+          <path d="M650 175 H538 m8 -5 l-8 5 8 5" pathLength="1" style="--i:6" />
+        </g>
+        <g fill="currentColor" font-family="var(--mono)">
+          <text x="115" y="72" text-anchor="middle" font-size="13" font-weight="600" style="--i:0">pnpm-store</text>
+          <text x="115" y="92" text-anchor="middle" font-size="11" opacity="0.7" style="--i:0">cache only</text>
+          <text x="430" y="50" text-anchor="middle" font-size="13" font-weight="600" style="--i:1">build-modules</text>
+          <text x="430" y="70" text-anchor="middle" font-size="11" opacity="0.7" style="--i:1">all deps · build only</text>
+          <text x="430" y="170" text-anchor="middle" font-size="13" font-weight="600" style="--i:2">launch-modules</text>
+          <text x="430" y="190" text-anchor="middle" font-size="11" opacity="0.7" style="--i:2">--prod · in the image</text>
+          <text x="745" y="170" text-anchor="middle" font-size="13" font-weight="600" style="--i:3">/tmp/node_modules</text>
+          <text x="745" y="190" text-anchor="middle" font-size="11" opacity="0.7" style="--i:3">link, rebuilt by exec.d</text>
+          <text x="745" y="270" text-anchor="middle" font-size="13" font-weight="600" style="--i:4">app/node_modules</text>
+          <text x="255" y="130" text-anchor="middle" font-size="11" style="--i:5">hard links</text>
+        </g>
+      </svg>
+    </figure>
+    <ul>
+      <li><strong>pnpm-store</strong> (cache): pnpm's content-addressable store, kept between builds. Installs use <code>--store-dir</code> on it with <code>--prefer-offline</code>. If you configure your own <code>store-dir</code> and it exists, it is used with <code>--offline</code> instead, for air-gapped builds.</li>
+      <li><strong>build-modules</strong>: <code>pnpm install --frozen-lockfile</code> with devDependencies, on <code>PATH</code> with <code>NODE_ENV=development</code> for later build steps such as <code>BP_NODE_RUN_SCRIPTS</code>. Not in the image.</li>
+      <li><strong>launch-modules</strong>: the same install with <code>--prod</code> (unless <code>NODE_ENV=development</code>), exported with the image.</li>
+      <li>The app's <code>node_modules</code> is a link to <code>/tmp/node_modules</code>, which links to the layer. <code>/tmp</code> is not part of the image, so an exec.d helper recreates that link at every start, pointing at launch-modules.</li>
+    </ul>
+  </section>
+
+  <section class="reveal">
+    <h2 data-n="3">When it reinstalls</h2>
+    <p>Each layer stores a checksum of everything that decides its content, and is reused when the checksum is unchanged:</p>
+    <ul>{cacheKey.map((c) => <li>{c}</li>)}</ul>
+  </section>
+
+  <section class="reveal">
+    <h2 data-n="4">Private registries</h2>
+    <p>
+      Registry credentials never belong in the image. Provide them as a service binding of type <code>npmrc</code>
+      (with a <code>.npmrc</code> entry) or <code>pnpmrc</code> (with <code>.pnpmrc</code>); they are linked into the build
+      user's home directory for the install and removed afterwards.
+    </p>
+    <pre><code>{`mkdir -p bindings/npmrc
+echo npmrc > bindings/npmrc/type
+cp ~/.npmrc bindings/npmrc/.npmrc
+pack build my-app --builder <builder> --volume "$PWD/bindings/npmrc:/platform/bindings/npmrc"`}</code></pre>
+  </section>
+
+  <section class="reveal">
+    <h2 data-n="5">What changed compared with yarn-install</h2>
+    <div class="grid grid-2">
+      {changes.map(([t, d]) => <div class="panel"><span class="label">{t}</span><p>{d}</p></div>)}
+    </div>
+  </section>
+
+  <section class="reveal">
+    <h2 data-n="6">Starting the app</h2>
+    <p>
+      pnpm apps start like any Node.js app: <a href="https://github.com/paketo-buildpacks/npm-start">npm-start</a> runs{' '}
+      <code>scripts.start</code> from package.json (choose another script with <code>BP_NPM_START_SCRIPT</code>), and{' '}
+      <a href="https://github.com/paketo-buildpacks/node-start">node-start</a> runs <code>server.js</code>, <code>app.js</code>,{' '}
+      <code>main.js</code>, <code>index.js</code> or <code>BP_LAUNCHPOINT</code>. For monorepos, point{' '}
+      <code>BP_NODE_PROJECT_PATH</code> at the app's directory.
+    </p>
+  </section>
+</Base>
+
+<style>
+  .lead { max-width: 48rem; font-size: 1.05rem; }
+  .figure { margin: 0 0 1rem; padding-top: 2rem; }
+  .figure svg { width: 100%; height: auto; color: var(--ink); }
+  .callout { margin: 1.5rem 0; }
+</style>
