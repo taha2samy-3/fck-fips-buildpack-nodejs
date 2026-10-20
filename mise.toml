@@ -10,6 +10,9 @@ actionlint = "1.7.12"
 oras = "1.3.5"
 cosign = "3.1.3"
 crane = "0.22.1"
+# Documentation site (docs/)
+node = "24.22.0"
+pnpm = "10.34.7"
 
 [tasks.lint]
 description = "Static checks: golangci-lint, shellcheck, actionlint"
@@ -43,3 +46,13 @@ description = "Build and run the testdata apps with the local builder"
 depends = ["stack", "package"]
 env = { TMPDIR = "{{config_root}}/.cache/tmp" }
 run = "mkdir -p \"$TMPDIR\" && go test -tags integration -v -count=1 -timeout 60m ./integration"
+
+[tasks.docs]
+description = "Serve the documentation site with live reload"
+dir = "docs"
+run = "pnpm install --frozen-lockfile && pnpm dev"
+
+[tasks.docs-build]
+description = "Build the documentation site into docs/dist"
+dir = "docs"
+run = "pnpm install --frozen-lockfile && pnpm build"
