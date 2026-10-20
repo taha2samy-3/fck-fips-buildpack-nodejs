@@ -1,11 +1,14 @@
 package pnpm
 
 import (
+	"cmp"
 	"context"
 	"errors"
 	"fmt"
+	"os"
 	"os/exec"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"time"
 
@@ -84,10 +87,32 @@ func Build(registry Registry, nodeVersion NodeVersion, clock chronos.Clock, logg
 			logger.Subprocess("Note: package.json pins pnpm@%s; installing %s as %s asks", pinned.Version, manifest.Version, source)
 		}
 
-		if err := checkNode(manifest, nodeVersion); err != nil {
+		// pnpm 12+ is a native executable published as a per-platform
+		// optional dependency of the "pnpm" package, chosen by its install
+		// script. Pick it here instead: the exact version the wrapper pins,
+		// for this architecture, glibc build.
+		arch := cmp.Or(bctx.TargetInfo.Arch, runtime.GOARCH)
+		var native *npm.Manifest
+		if name, version, ok := nativePackage(manifest, arch); ok {
+			p, err := registry.Packument(ctx, name)
+			if err != nil {
+				return packit.BuildResult{}, err
+			}
+			m, err := p.Resolve(version)
+			if err != nil {
+				return packit.BuildResult{}, err
+			}
+			native = &m
+			logger.Subprocess("Native executable %s@%s", m.Name, m.Version)
+		} else if err := checkNode(manifest, nodeVersion); err != nil {
 			return packit.BuildResult{}, err
 		}
 		logger.Break()
+
+		key := manifest.Dist.Integrity
+		if native != nil {
+			key += " " + native.Dist.Integrity
+		}
 
 		launch, build := draft.NewPlanner().MergeLayerTypes(PlanPNPM, bctx.Plan.Entries)
 
@@ -95,7 +120,7 @@ func Build(registry Registry, nodeVersion NodeVersion, clock chronos.Clock, logg
 		if err != nil {
 			return packit.BuildResult{}, err
 		}
-		if cached, _ := layer.Metadata["integrity"].(string); cached != "" && cached == manifest.Dist.Integrity {
+		if cached, _ := layer.Metadata["integrity"].(string); cached != "" && cached == key {
 			logger.Process("Reusing cached layer %s", layer.Path)
 		} else {
 			logger.Process("Installing pnpm %s", manifest.Version)
@@ -107,14 +132,22 @@ func Build(registry Registry, nodeVersion NodeVersion, clock chronos.Clock, logg
 				if err := registry.Install(ctx, manifest, pkgDir, extra...); err != nil {
 					return err
 				}
-				return npm.LinkBins(filepath.Join(layer.Path, "bin"), pkgDir, manifest)
+				binDir := filepath.Join(layer.Path, "bin")
+				if native == nil {
+					return npm.LinkBins(binDir, pkgDir, manifest)
+				}
+				nativeDir := filepath.Join(layer.Path, "lib", "node_modules", filepath.FromSlash(native.Name))
+				if err := registry.Install(ctx, *native, nativeDir); err != nil {
+					return err
+				}
+				return linkNative(binDir, filepath.Join(nativeDir, "pnpm"), manifest)
 			})
 			if err != nil {
 				return packit.BuildResult{}, err
 			}
 			logger.Action("Verified against the registry integrity; completed in %s", duration.Round(time.Millisecond))
 
-			layer.Metadata = map[string]any{"integrity": manifest.Dist.Integrity}
+			layer.Metadata = map[string]any{"integrity": key}
 			c := sbom.Component{
 				Name:     "pnpm",
 				Version:  manifest.Version,
@@ -126,6 +159,19 @@ func Build(registry Registry, nodeVersion NodeVersion, clock chronos.Clock, logg
 				c.Checksum = fmt.Sprintf("%s:%x", d.Algorithm, d.Sum)
 			}
 			doc := sbom.Document{Name: "pnpm", Components: []sbom.Component{c}}
+			if native != nil {
+				nc := sbom.Component{
+					Name:     native.Name,
+					Version:  native.Version,
+					PURL:     "pkg:npm/" + strings.Replace(native.Name, "@", "%40", 1) + "@" + native.Version,
+					License:  "MIT",
+					Supplier: "npm",
+				}
+				if d, err := npm.ParseIntegrity(native.Dist.Integrity); err == nil {
+					nc.Checksum = fmt.Sprintf("%s:%x", d.Algorithm, d.Sum)
+				}
+				doc.Components = append(doc.Components, nc)
+			}
 			if layer.SBOM, err = doc.InFormats(bctx.BuildpackInfo.SBOMFormats...); err != nil {
 				return packit.BuildResult{}, err
 			}
@@ -138,6 +184,43 @@ func Build(registry Registry, nodeVersion NodeVersion, clock chronos.Clock, logg
 
 		return packit.BuildResult{Layers: []packit.Layer{layer}}, nil
 	}
+}
+
+// nativePackage returns the platform package of a native pnpm release
+// (pnpm 12+) for arch, if the release has one.
+func nativePackage(m npm.Manifest, arch string) (name, version string, ok bool) {
+	cpu := map[string]string{"amd64": "x64", "x86_64": "x64", "arm64": "arm64", "aarch64": "arm64"}[arch]
+	if cpu == "" {
+		return "", "", false
+	}
+	name = "@pnpm/exe.linux-" + cpu
+	version, ok = m.OptionalDependencies[name]
+	return name, version, ok
+}
+
+// linkNative points every command the wrapper declares (pnpm, pn, pnpx,
+// pnx) at the native executable, which dispatches on the name it was run as.
+func linkNative(binDir, executable string, wrapper npm.Manifest) error {
+	bins, err := wrapper.Bins()
+	if err != nil {
+		return err
+	}
+	if err := os.Chmod(executable, 0o755); err != nil {
+		return err
+	}
+	if err := os.MkdirAll(binDir, 0o755); err != nil {
+		return err
+	}
+	link, err := filepath.Rel(binDir, executable)
+	if err != nil {
+		return err
+	}
+	for name := range bins {
+		if err := os.Symlink(link, filepath.Join(binDir, name)); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 // requested returns the highest priority version request in the plan.

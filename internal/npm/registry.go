@@ -38,12 +38,14 @@ type Registry struct {
 
 // Manifest is the part of a version's metadata the buildpacks use.
 type Manifest struct {
-	Name       string          `json:"name"`
-	Version    string          `json:"version"`
-	Bin        json.RawMessage `json:"bin"`
-	Engines    json.RawMessage `json:"engines"`
-	Deprecated json.RawMessage `json:"deprecated"`
-	Dist       Dist            `json:"dist"`
+	Name    string          `json:"name"`
+	Version string          `json:"version"`
+	Bin     json.RawMessage `json:"bin"`
+	// OptionalDependencies maps package names to exact versions or ranges.
+	OptionalDependencies map[string]string `json:"optionalDependencies"`
+	Engines              json.RawMessage   `json:"engines"`
+	Deprecated           json.RawMessage   `json:"deprecated"`
+	Dist                 Dist              `json:"dist"`
 }
 
 // Dist locates a version's tarball and its Subresource Integrity.
