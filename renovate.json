@@ -1,0 +1,93 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": [
+    "config:best-practices",
+    ":semanticCommits",
+    ":maintainLockFilesWeekly"
+  ],
+  "description": "config:best-practices pins GitHub Actions and Docker images by digest; updates wait 3 days so a compromised release is likely pulled before it reaches us.",
+  "timezone": "Africa/Cairo",
+  "schedule": ["before 6am on monday"],
+  "minimumReleaseAge": "3 days",
+  "prConcurrentLimit": 10,
+  "labels": ["dependencies"],
+  "osvVulnerabilityAlerts": true,
+  "vulnerabilityAlerts": {
+    "labels": ["security"],
+    "schedule": ["at any time"],
+    "minimumReleaseAge": null
+  },
+  "postUpdateOptions": ["gomodTidy", "gomodUpdateImportPaths"],
+  "packageRules": [
+    {
+      "description": "Go modules, one PR for minor and patch updates",
+      "matchManagers": ["gomod"],
+      "matchUpdateTypes": ["minor", "patch", "digest"],
+      "groupName": "go modules"
+    },
+    {
+      "description": "Go toolchain: go.mod and mise.toml move together",
+      "matchDepNames": ["go", "golang"],
+      "groupName": "go toolchain"
+    },
+    {
+      "description": "GitHub Actions, pinned by commit SHA",
+      "matchManagers": ["github-actions"],
+      "groupName": "github actions"
+    },
+    {
+      "description": "slsa-github-generator verifies its own ref: it must stay on a tag, not a digest",
+      "matchManagers": ["github-actions"],
+      "matchPackageNames": ["slsa-framework/slsa-github-generator"],
+      "pinDigests": false
+    },
+    {
+      "description": "Paketo buildpacks bundled in the meta buildpack: buildpack.toml and package.toml must change together (enforced by buildpacks/nodejs/meta_test.go)",
+      "matchFileNames": ["buildpacks/nodejs/**"],
+      "groupName": "paketo buildpacks"
+    },
+    {
+      "description": "Stack base image digests",
+      "matchFileNames": ["stack/**"],
+      "groupName": "stack base images"
+    },
+    {
+      "description": "Tools pinned in mise.toml",
+      "matchManagers": ["mise"],
+      "groupName": "mise tools"
+    },
+    {
+      "description": "Documentation site dependencies",
+      "matchFileNames": ["docs/**"],
+      "groupName": "docs"
+    }
+  ],
+  "customManagers": [
+    {
+      "customType": "regex",
+      "description": "Paketo buildpack images in the meta buildpack's package.toml",
+      "managerFilePatterns": ["/^buildpacks/nodejs/package\\.toml$/"],
+      "matchStrings": ["uri = \"docker://docker\\.io/(?<depName>paketobuildpacks/[a-z-]+):(?<currentValue>[0-9.]+)\""],
+      "datasourceTemplate": "docker",
+      "registryUrlTemplate": "https://index.docker.io"
+    },
+    {
+      "customType": "regex",
+      "description": "Paketo buildpack versions in the meta buildpack's order groups",
+      "managerFilePatterns": ["/^buildpacks/nodejs/buildpack\\.toml$/"],
+      "matchStrings": ["id = \"paketo-buildpacks/(?<name>[a-z-]+)\"\\s+version = \"(?<currentValue>[0-9.]+)\""],
+      "depNameTemplate": "paketobuildpacks/{{{name}}}",
+      "datasourceTemplate": "docker",
+      "registryUrlTemplate": "https://index.docker.io"
+    },
+    {
+      "customType": "regex",
+      "description": "CNB lifecycle version in builder.toml",
+      "managerFilePatterns": ["/^builder/builder\\.toml$/"],
+      "matchStrings": ["\\[lifecycle\\]\\s+version = \"(?<currentValue>[0-9.]+)\""],
+      "depNameTemplate": "buildpacks/lifecycle",
+      "datasourceTemplate": "github-releases",
+      "extractVersionTemplate": "^v(?<version>.*)$"
+    }
+  ]
+}

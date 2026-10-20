@@ -2,7 +2,7 @@
 # Run image: glibc, CA certificates, time zones and bash (npm-start and
 # Procfile commands run through bash). Everything Node.js needs, including
 # its shared libraries, arrives in buildpack layers.
-ARG BASE_IMAGE=cgr.dev/chainguard/wolfi-base@sha256:81211e15a86ea1d5357f284482af45730c51de45eaf10ad9ce205d6bfc2df323
+ARG BASE_IMAGE=cgr.dev/chainguard/wolfi-base:latest@sha256:81211e15a86ea1d5357f284482af45730c51de45eaf10ad9ce205d6bfc2df323
 FROM ${BASE_IMAGE}
 
 ARG CNB_USER_ID=1000

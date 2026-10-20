@@ -3,7 +3,7 @@
 # shell and no package manager. Works for apps started by node-start (node
 # runs directly); npm-start and Procfile commands need the regular run image.
 # Use it with: pack build --run-image <registry>/run-distroless:<tag>
-ARG BASE_IMAGE=cgr.dev/chainguard/wolfi-base@sha256:81211e15a86ea1d5357f284482af45730c51de45eaf10ad9ce205d6bfc2df323
+ARG BASE_IMAGE=cgr.dev/chainguard/wolfi-base:latest@sha256:81211e15a86ea1d5357f284482af45730c51de45eaf10ad9ce205d6bfc2df323
 FROM ${BASE_IMAGE} AS rootfs
 
 ARG CNB_USER_ID=1000

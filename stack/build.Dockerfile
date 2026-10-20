@@ -2,7 +2,7 @@
 # Build image: where buildpacks run. It carries the toolchain native addons
 # need (node-gyp: python, make, a C/C++ compiler). Node.js, npm and pnpm are
 # not here; the buildpacks install them into layers.
-ARG BASE_IMAGE=cgr.dev/chainguard/wolfi-base@sha256:81211e15a86ea1d5357f284482af45730c51de45eaf10ad9ce205d6bfc2df323
+ARG BASE_IMAGE=cgr.dev/chainguard/wolfi-base:latest@sha256:81211e15a86ea1d5357f284482af45730c51de45eaf10ad9ce205d6bfc2df323
 FROM ${BASE_IMAGE}
 
 ARG CNB_USER_ID=1000
