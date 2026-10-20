@@ -1,6 +1,7 @@
 name: Release
 
-# Pushing a tag vX.Y.Z publishes everything to GHCR as signed OCI artifacts:
+# Only a pushed tag vX.Y.Z releases, and only if CHANGELOG.md has a
+# "## [X.Y.Z]" section, which becomes the release notes. It publishes everything to GHCR as signed OCI artifacts:
 #   ghcr.io/<owner>/fck-fips/{build,run,run-distroless}:X.Y.Z   stack images
 #   ghcr.io/<owner>/fck-fips/<buildpack>:X.Y.Z                    buildpackages
 #   ghcr.io/<owner>/fck-fips/builder-nodejs:X.Y.Z                 builder
@@ -68,6 +69,8 @@ jobs:
             echo "::error::tag ${TAG} does not match VERSION ($(cat VERSION))"
             exit 1
           fi
+          # Fail before building anything if the release is undocumented.
+          ./scripts/changelog.sh "${version}" > /dev/null
           echo "version=${version}" >> "$GITHUB_OUTPUT"
           echo "registry=ghcr.io/${OWNER,,}/fck-fips" >> "$GITHUB_OUTPUT"
 
@@ -194,9 +197,13 @@ jobs:
     permissions:
       contents: write
     steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
       - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
         with:
           name: release-files
+          path: release
       - name: Create release
         env:
           GH_TOKEN: ${{ github.token }}
@@ -205,6 +212,8 @@ jobs:
           VERSION: ${{ needs.publish.outputs.version }}
         run: |
           {
+            ./scripts/changelog.sh "${VERSION}"
+            echo
             echo "## Builder"
             echo
             echo '```sh'
@@ -215,7 +224,7 @@ jobs:
             echo "## Digests"
             echo
             echo '```'
-            cat digests.txt
+            cat release/digests.txt
             echo '```'
             echo
             echo "Verify the SLSA Build L3 provenance:"
@@ -232,6 +241,7 @@ jobs:
             echo "  --certificate-identity-regexp 'https://github.com/${GITHUB_REPOSITORY}/.github/workflows/release.yml@.*' \\"
             echo "  --certificate-oidc-issuer https://token.actions.githubusercontent.com"
             echo '```'
-          } > notes.md
+          } > "${RUNNER_TEMP}/notes.md"
           gh release create "${TAG}" --repo "${GITHUB_REPOSITORY}" --title "${TAG}" \
-            --notes-file notes.md --generate-notes cnb/*.cnb cnb/SHA256SUMS
+            --verify-tag --notes-file "${RUNNER_TEMP}/notes.md" \
+            release/cnb/*.cnb release/cnb/SHA256SUMS

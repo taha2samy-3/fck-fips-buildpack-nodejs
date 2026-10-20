@@ -154,8 +154,9 @@ func Build(newRepository RepositoryFactory, clock chronos.Clock, logger scribe.E
 		}
 		logger.EnvironmentVariables(layer)
 
-		logger.Process("FIPS 140-3 module")
+		logger.Process("FIPS 140-3 validated module")
 		logger.Subprocess("%s, CMVP certificate %s", module.Name, module.Certificate)
+		logger.Subprocess("The validation belongs to the module. This image is not FIPS certified.")
 		logger.Subprocess("The certificate lists tested operational environments; Wolfi is not one of them.")
 		logger.Subprocess("Using the unchanged module here is a port under FIPS 140-3 IG 2.3.A, which the operator affirms.")
 		if !atBuild {

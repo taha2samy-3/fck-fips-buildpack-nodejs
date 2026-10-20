@@ -1,5 +1,5 @@
 # Rendered by scripts/package.sh; {{...}} placeholders are filled in there.
-description = "fck-fips Node.js builder: Wolfi base images, Node.js from signed Wolfi packages, optional FIPS 140-3 mode (BP_OPENSSL_FIPS=true)"
+description = "fck-fips Node.js builder: Wolfi base images, Node.js from signed Wolfi packages, optional FIPS 140-3 validated OpenSSL module (BP_OPENSSL_FIPS=true)"
 
 [[buildpacks]]
   uri = "{{META_URI}}"

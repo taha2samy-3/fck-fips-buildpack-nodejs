@@ -5,7 +5,7 @@ api = "0.10"
   name = "fck-fips Node.js"
   version = "{{VERSION}}"
   homepage = "https://github.com/taha2samy-3/fck-fips-buildpacks-nodejs"
-  description = "Node.js apps on Wolfi with npm, yarn or pnpm, optionally in FIPS 140-3 mode (BP_OPENSSL_FIPS=true)"
+  description = "Node.js apps on Wolfi with npm, yarn or pnpm, optionally with a FIPS 140-3 validated OpenSSL module (BP_OPENSSL_FIPS=true)"
   keywords = ["nodejs", "node", "npm", "yarn", "pnpm", "wolfi", "fips"]
 
   [[buildpack.licenses]]

@@ -46,7 +46,10 @@ cosign verify ghcr.io/taha2samy-3/fck-fips/builder-nodejs:<version> \
 
 ## FIPS 140-3 scope
 
-The OpenSSL FIPS Provider 3.1.2 holds CMVP certificate #4985 for its tested
+This project is **not FIPS certified**, and neither are the images it builds.
+With `BP_OPENSSL_FIPS=true` they use a **FIPS 140-3 validated cryptographic
+module**: the OpenSSL FIPS Provider 3.1.2, CMVP certificate #4985, unchanged.
+The module holds that validation for its tested
 operational environments. Wolfi is not one of them: running the unchanged
 module there is a port under FIPS 140-3 IG 2.3.A that the operator affirms.
 This project makes no other claim.

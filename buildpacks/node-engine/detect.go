@@ -27,7 +27,8 @@ const (
 // Detect always passes: whether Node.js is needed is decided by the
 // buildpacks that require "node". It records the versions the app asks for
 // and, when FIPS mode is requested, requires the openssl-fips buildpack so a
-// builder without it fails loudly instead of producing a non-FIPS image.
+// builder without it fails loudly instead of building an image without the
+// validated module.
 func Detect() packit.DetectFunc {
 	return func(context packit.DetectContext) (packit.DetectResult, error) {
 		projectPath, err := libnodejs.FindProjectPath(context.WorkingDir)
