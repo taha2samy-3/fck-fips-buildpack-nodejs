@@ -1,10 +1,12 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-labelledby="t">
-  <title id="t">fck-fips buildpacks</title>
-  <defs>
-    <mask id="seal"><rect width="64" height="64" fill="#fff"/><path d="M24.80,17.95L29.80,22.35L39.40,13.15" fill="none" stroke="#000" stroke-width="3.6" stroke-linecap="square"/></mask>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-labelledby="fv-t">
+  <title id="fv-t">fck-fips · Node.js buildpacks</title>
+  <style>.ink{fill:#111;--seam:#fff}@media (prefers-color-scheme:dark){.ink{fill:#ededea;--seam:#0c0c0c}}</style>
+  <g class="ink"><defs>
+  <mask id="fv-seal"><rect x="-1" y="-1" width="66" height="66" fill="#fff"/><path d="M24.80,18.45L29.80,22.85L39.40,13.65" fill="none" stroke="#000" stroke-width="3.60" stroke-linecap="square"/></mask>
   </defs>
-  <path d="M32.00,4.00L55.80,17.75L32.00,31.50L8.20,17.75Z" fill="#111111" mask="url(#seal)"/>
-  <g fill="#111111"><path d="M8.20,17.75L32.00,31.50L32.00,39.40L8.20,25.65Z"/><path d="M8.20,28.05L32.00,41.80L32.00,49.70L8.20,35.95Z"/><path d="M8.20,38.35L32.00,52.10L32.00,60.00L8.20,46.25Z"/></g>
-  <g fill="#111111"><path d="M32.00,31.50L55.80,17.75L55.80,25.65L32.00,39.40Z"/><path d="M32.00,41.80L55.80,28.05L55.80,35.95L32.00,49.70Z"/><path d="M32.00,52.10L55.80,38.35L55.80,46.25L32.00,60.00Z"/></g>
-  <path d="M32,31.5V61" stroke="#fff" stroke-width="1.6"/>
+  <path d="M32.00,4.50L55.82,18.25L32.00,32.00L8.18,18.25Z" fill="inherit" mask="url(#fv-seal)"/>
+  <g fill="inherit"><path d="M8.18,18.25L32.00,32.00L32.00,39.43L8.18,25.68Z"/><path d="M8.18,28.28L32.00,42.03L32.00,49.47L8.18,35.72Z"/><path d="M8.18,38.32L32.00,52.07L32.00,59.50L8.18,45.75Z"/></g>
+  <g fill="inherit"><path d="M32.00,32.00L55.82,18.25L55.82,25.68L32.00,39.43Z"/><path d="M32.00,42.03L55.82,28.28L55.82,35.72L32.00,49.47Z"/><path d="M32.00,52.07L55.82,38.32L55.82,45.75L32.00,59.50Z"/></g>
+  <path d="M32.00,32.00V59.50" stroke="var(--seam, #fff)" stroke-width="1.4"/>
+  </g>
 </svg>

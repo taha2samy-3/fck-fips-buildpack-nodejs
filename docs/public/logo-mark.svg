@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-labelledby="mk-t">
+  <title id="mk-t">fck-fips · Node.js buildpacks</title>
+  <defs>
+  <mask id="mk-seal"><rect x="-1" y="-1" width="66" height="66" fill="#fff"/><path d="M24.80,18.45L29.80,22.85L39.40,13.65" fill="none" stroke="#000" stroke-width="3.60" stroke-linecap="square"/></mask>
+  </defs>
+  <path d="M32.00,4.50L55.82,18.25L32.00,32.00L8.18,18.25Z" fill="currentColor" mask="url(#mk-seal)"/>
+  <g fill="currentColor"><path d="M8.18,18.25L32.00,32.00L32.00,39.43L8.18,25.68Z"/><path d="M8.18,28.28L32.00,42.03L32.00,49.47L8.18,35.72Z"/><path d="M8.18,38.32L32.00,52.07L32.00,59.50L8.18,45.75Z"/></g>
+  <g fill="currentColor"><path d="M32.00,32.00L55.82,18.25L55.82,25.68L32.00,39.43Z"/><path d="M32.00,42.03L55.82,28.28L55.82,35.72L32.00,49.47Z"/><path d="M32.00,52.07L55.82,38.32L55.82,45.75L32.00,59.50Z"/></g>
+  <path d="M32.00,32.00V59.50" stroke="var(--seam, #fff)" stroke-width="1.4"/>
+</svg>

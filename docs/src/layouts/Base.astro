@@ -1,7 +1,7 @@
 ---
 import '../styles/global.css';
 import { version } from '../lib/buildpacks';
-import logo from '../../public/logo.svg?raw';
+import wordmark from '../../public/wordmark.svg?raw';
 
 interface Props {
   title: string;
@@ -48,9 +48,8 @@ const repo = 'https://github.com/taha2samy-3/fck-fips-buildpacks-nodejs';
 
     <header class="top">
       <div class="wrap">
-        <a class="brand" href={base}>
-          <span class="mark" set:html={logo} />
-          fck-fips
+        <a class="brand" href={base} aria-label="fck-fips home">
+          <span class="wordmark" set:html={wordmark} />
         </a>
         <nav aria-label="Main">
           {nav.map((item) => (

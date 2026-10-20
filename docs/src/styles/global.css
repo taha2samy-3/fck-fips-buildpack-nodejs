@@ -149,7 +149,9 @@ pre {
 }
 .top .wrap { display: flex; align-items: center; gap: 1.5rem; height: 64px; }
 .brand { display: flex; align-items: center; gap: 0.6rem; font-family: var(--mono); font-weight: 600; text-decoration: none; }
-.brand .mark, .brand .mark svg { display: block; width: 32px; height: 32px; }
+.brand .wordmark svg { display: block; height: 42px; width: auto; color: var(--ink); }
+.brand:hover .wordmark svg { transform: translateY(-1px); }
+.brand .wordmark svg { transition: transform 0.2s ease; }
 .top nav { display: flex; gap: 1.2rem; margin-left: auto; font-family: var(--mono); font-size: 0.85rem; }
 .top nav a { white-space: nowrap; text-decoration: none; padding: 0.2rem 0; border-bottom: 1px solid transparent; }
 .top nav a:hover, .top nav a[aria-current='page'] { border-bottom-color: var(--ink); }
