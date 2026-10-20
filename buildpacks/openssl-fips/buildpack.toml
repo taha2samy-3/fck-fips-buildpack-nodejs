@@ -1,0 +1,49 @@
+api = "0.10"
+
+[buildpack]
+  id = "fckfips/openssl-fips"
+  name = "fck-fips OpenSSL FIPS Provider"
+  version = "{{VERSION}}"
+  homepage = "https://github.com/taha2samy-3/fck-fips-buildpacks-nodejs"
+  description = "Runs OpenSSL in FIPS 140-3 approved mode with the OpenSSL FIPS Provider 3.1.2 (CMVP #4985)"
+  keywords = ["fips", "openssl", "fips-140-3"]
+  sbom-formats = ["application/vnd.cyclonedx+json", "application/spdx+json"]
+
+  [[buildpack.licenses]]
+    type = "Apache-2.0"
+    uri = "https://github.com/taha2samy-3/fck-fips-buildpacks-nodejs/blob/main/LICENSE"
+
+[metadata]
+  # The validated module. Change it only when NIST lists a new certificate,
+  # together with the package in https://github.com/taha2samy-3/node.
+  [metadata.module]
+    package = "openssl-provider-fips-3.1.2"
+    name = "OpenSSL FIPS Provider 3.1.2"
+    certificate = "#4985"
+    repository = "https://taha2samy-3.github.io/node/apk"
+
+  [[metadata.configurations]]
+    build = true
+    default = "false"
+    name = "BP_OPENSSL_FIPS"
+    description = "Enable this buildpack: install the FIPS provider and set OPENSSL_CONF / OPENSSL_MODULES at launch"
+
+  [[metadata.configurations]]
+    build = true
+    default = "false"
+    name = "BP_OPENSSL_FIPS_BUILD"
+    description = "Also enforce approved mode for the rest of the build (installs, build scripts)"
+
+  [[metadata.configurations]]
+    build = true
+    default = "https://taha2samy-3.github.io/node/apk"
+    name = "BP_OPENSSL_FIPS_REPOSITORY"
+    description = "Mirror of the provider repository; packages must keep their original signature"
+
+[[targets]]
+  os = "linux"
+  arch = "amd64"
+
+[[targets]]
+  os = "linux"
+  arch = "arm64"

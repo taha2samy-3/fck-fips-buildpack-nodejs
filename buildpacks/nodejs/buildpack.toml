@@ -1,0 +1,253 @@
+api = "0.10"
+
+[buildpack]
+  id = "fckfips/nodejs"
+  name = "fck-fips Node.js"
+  version = "{{VERSION}}"
+  homepage = "https://github.com/taha2samy-3/fck-fips-buildpacks-nodejs"
+  description = "Node.js apps on Wolfi with npm, yarn or pnpm, optionally in FIPS 140-3 mode (BP_OPENSSL_FIPS=true)"
+  keywords = ["nodejs", "node", "npm", "yarn", "pnpm", "wolfi", "fips"]
+
+  [[buildpack.licenses]]
+    type = "Apache-2.0"
+    uri = "https://github.com/taha2samy-3/fck-fips-buildpacks-nodejs/blob/main/LICENSE"
+
+# Groups are tried in order; the first whose required buildpacks all pass wins.
+# fckfips/openssl-fips passes only with BP_OPENSSL_FIPS=true, and node-engine then requires it.
+
+# pnpm: pnpm-lock.yaml
+[[order]]
+
+  [[order.group]]
+    id = "paketo-buildpacks/ca-certificates"
+    version = "3.14.2"
+    optional = true
+
+  [[order.group]]
+    id = "paketo-buildpacks/watchexec"
+    version = "3.11.3"
+    optional = true
+
+  [[order.group]]
+    id = "paketo-buildpacks/tini"
+    version = "0.4.12"
+    optional = true
+
+  [[order.group]]
+    id = "fckfips/openssl-fips"
+    version = "{{VERSION}}"
+    optional = true
+
+  [[order.group]]
+    id = "fckfips/node-engine"
+    version = "{{VERSION}}"
+
+  [[order.group]]
+    id = "fckfips/pnpm"
+    version = "{{VERSION}}"
+
+  [[order.group]]
+    id = "fckfips/pnpm-install"
+    version = "{{VERSION}}"
+
+  [[order.group]]
+    id = "paketo-buildpacks/node-run-script"
+    version = "2.3.57"
+    optional = true
+
+  [[order.group]]
+    id = "paketo-buildpacks/node-start"
+    version = "2.7.10"
+    optional = true
+
+  [[order.group]]
+    id = "paketo-buildpacks/npm-start"
+    version = "2.5.10"
+    optional = true
+
+  [[order.group]]
+    id = "paketo-buildpacks/procfile"
+    version = "5.15.4"
+    optional = true
+
+  [[order.group]]
+    id = "paketo-buildpacks/environment-variables"
+    version = "4.12.0"
+    optional = true
+
+  [[order.group]]
+    id = "paketo-buildpacks/image-labels"
+    version = "4.14.3"
+    optional = true
+
+# yarn: yarn.lock
+[[order]]
+
+  [[order.group]]
+    id = "paketo-buildpacks/ca-certificates"
+    version = "3.14.2"
+    optional = true
+
+  [[order.group]]
+    id = "paketo-buildpacks/watchexec"
+    version = "3.11.3"
+    optional = true
+
+  [[order.group]]
+    id = "paketo-buildpacks/tini"
+    version = "0.4.12"
+    optional = true
+
+  [[order.group]]
+    id = "fckfips/openssl-fips"
+    version = "{{VERSION}}"
+    optional = true
+
+  [[order.group]]
+    id = "fckfips/node-engine"
+    version = "{{VERSION}}"
+
+  [[order.group]]
+    id = "paketo-buildpacks/yarn"
+    version = "2.5.2"
+
+  [[order.group]]
+    id = "paketo-buildpacks/yarn-install"
+    version = "2.7.26"
+
+  [[order.group]]
+    id = "paketo-buildpacks/node-run-script"
+    version = "2.3.57"
+    optional = true
+
+  [[order.group]]
+    id = "paketo-buildpacks/node-start"
+    version = "2.7.10"
+    optional = true
+
+  [[order.group]]
+    id = "paketo-buildpacks/yarn-start"
+    version = "2.5.40"
+    optional = true
+
+  [[order.group]]
+    id = "paketo-buildpacks/procfile"
+    version = "5.15.4"
+    optional = true
+
+  [[order.group]]
+    id = "paketo-buildpacks/environment-variables"
+    version = "4.12.0"
+    optional = true
+
+  [[order.group]]
+    id = "paketo-buildpacks/image-labels"
+    version = "4.14.3"
+    optional = true
+
+# npm: package.json
+[[order]]
+
+  [[order.group]]
+    id = "paketo-buildpacks/ca-certificates"
+    version = "3.14.2"
+    optional = true
+
+  [[order.group]]
+    id = "paketo-buildpacks/watchexec"
+    version = "3.11.3"
+    optional = true
+
+  [[order.group]]
+    id = "paketo-buildpacks/tini"
+    version = "0.4.12"
+    optional = true
+
+  [[order.group]]
+    id = "fckfips/openssl-fips"
+    version = "{{VERSION}}"
+    optional = true
+
+  [[order.group]]
+    id = "fckfips/node-engine"
+    version = "{{VERSION}}"
+
+  [[order.group]]
+    id = "paketo-buildpacks/npm-install"
+    version = "2.3.32"
+
+  [[order.group]]
+    id = "paketo-buildpacks/node-run-script"
+    version = "2.3.57"
+    optional = true
+
+  [[order.group]]
+    id = "paketo-buildpacks/node-start"
+    version = "2.7.10"
+    optional = true
+
+  [[order.group]]
+    id = "paketo-buildpacks/npm-start"
+    version = "2.5.10"
+    optional = true
+
+  [[order.group]]
+    id = "paketo-buildpacks/procfile"
+    version = "5.15.4"
+    optional = true
+
+  [[order.group]]
+    id = "paketo-buildpacks/environment-variables"
+    version = "4.12.0"
+    optional = true
+
+  [[order.group]]
+    id = "paketo-buildpacks/image-labels"
+    version = "4.14.3"
+    optional = true
+
+# no package manager: server.js, app.js, main.js, index.js or BP_LAUNCHPOINT
+[[order]]
+
+  [[order.group]]
+    id = "paketo-buildpacks/ca-certificates"
+    version = "3.14.2"
+    optional = true
+
+  [[order.group]]
+    id = "paketo-buildpacks/watchexec"
+    version = "3.11.3"
+    optional = true
+
+  [[order.group]]
+    id = "paketo-buildpacks/tini"
+    version = "0.4.12"
+    optional = true
+
+  [[order.group]]
+    id = "fckfips/openssl-fips"
+    version = "{{VERSION}}"
+    optional = true
+
+  [[order.group]]
+    id = "fckfips/node-engine"
+    version = "{{VERSION}}"
+
+  [[order.group]]
+    id = "paketo-buildpacks/node-start"
+    version = "2.7.10"
+
+  [[order.group]]
+    id = "paketo-buildpacks/procfile"
+    version = "5.15.4"
+    optional = true
+
+  [[order.group]]
+    id = "paketo-buildpacks/environment-variables"
+    version = "4.12.0"
+    optional = true
+
+  [[order.group]]
+    id = "paketo-buildpacks/image-labels"
+    version = "4.14.3"
+    optional = true

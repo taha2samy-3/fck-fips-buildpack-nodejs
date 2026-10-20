@@ -1,0 +1,27 @@
+# Rendered by scripts/package.sh; {{...}} placeholders are filled in there.
+description = "fck-fips Node.js builder: Wolfi base images, Node.js from signed Wolfi packages, optional FIPS 140-3 mode (BP_OPENSSL_FIPS=true)"
+
+[[buildpacks]]
+  uri = "{{META_URI}}"
+
+[[order]]
+  [[order.group]]
+    id = "fckfips/nodejs"
+    version = "{{VERSION}}"
+
+[build]
+  image = "{{BUILD_IMAGE}}"
+
+[[run.images]]
+  image = "{{RUN_IMAGE}}"
+
+[lifecycle]
+  version = "0.21.25"
+
+[[targets]]
+  os = "linux"
+  arch = "amd64"
+
+[[targets]]
+  os = "linux"
+  arch = "arm64"

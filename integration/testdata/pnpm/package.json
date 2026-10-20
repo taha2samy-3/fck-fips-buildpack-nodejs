@@ -1,0 +1,8 @@
+{
+  "name": "pnpm-app",
+  "version": "1.0.0",
+  "private": true,
+  "packageManager": "pnpm@10.18.3",
+  "scripts": { "start": "node server.js" },
+  "dependencies": { "ms": "2.1.3" }
+}

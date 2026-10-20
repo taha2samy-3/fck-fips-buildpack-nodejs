@@ -1,0 +1,39 @@
+api = "0.10"
+
+[buildpack]
+  id = "fckfips/pnpm"
+  name = "fck-fips pnpm"
+  version = "{{VERSION}}"
+  homepage = "https://github.com/taha2samy-3/fck-fips-buildpacks-nodejs"
+  description = "Installs the pnpm CLI from the npm registry, verified against its published integrity"
+  keywords = ["pnpm", "nodejs"]
+  sbom-formats = ["application/vnd.cyclonedx+json", "application/spdx+json"]
+
+  [[buildpack.licenses]]
+    type = "Apache-2.0"
+    uri = "https://github.com/taha2samy-3/fck-fips-buildpacks-nodejs/blob/main/LICENSE"
+
+[metadata]
+  [metadata.default-versions]
+    # Used when neither BP_PNPM_VERSION, packageManager nor an old lockfile
+    # names a version. pnpm 10 runs on Node.js 18.12+; pnpm 11 needs 22+.
+    pnpm = "10"
+
+  [[metadata.configurations]]
+    build = true
+    name = "BP_PNPM_VERSION"
+    description = "pnpm version, range or dist-tag; overrides packageManager in package.json"
+
+  [[metadata.configurations]]
+    build = true
+    default = "https://registry.npmjs.org"
+    name = "BP_NPM_REGISTRY"
+    description = "Registry pnpm is downloaded from"
+
+[[targets]]
+  os = "linux"
+  arch = "amd64"
+
+[[targets]]
+  os = "linux"
+  arch = "arm64"

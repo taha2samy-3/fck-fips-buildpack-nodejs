@@ -1,0 +1,46 @@
+api = "0.10"
+
+[buildpack]
+  id = "fckfips/pnpm-install"
+  name = "fck-fips pnpm Install"
+  version = "{{VERSION}}"
+  homepage = "https://github.com/taha2samy-3/fck-fips-buildpacks-nodejs"
+  description = "Installs app dependencies with pnpm, with the pnpm store cached between builds"
+  keywords = ["pnpm", "nodejs", "node_modules"]
+  sbom-formats = ["application/vnd.cyclonedx+json", "application/spdx+json", "application/vnd.syft+json"]
+
+  [[buildpack.licenses]]
+    type = "Apache-2.0"
+    uri = "https://github.com/taha2samy-3/fck-fips-buildpacks-nodejs/blob/main/LICENSE"
+
+[metadata]
+  [[metadata.configurations]]
+    build = true
+    name = "BP_NODE_PROJECT_PATH"
+    description = "Directory of the app inside the source tree, for monorepos"
+
+  [[metadata.configurations]]
+    build = true
+    default = "false"
+    name = "BP_PNPM_IN_LAUNCH"
+    description = "Also put pnpm in the launch image (for start commands that call pnpm)"
+
+  [[metadata.configurations]]
+    build = true
+    default = "false"
+    name = "BP_PNPM_STRICT_BUILD_SCRIPTS"
+    description = "Keep pnpm 10+'s default of blocking dependency build scripts when the project configures none"
+
+  [[metadata.configurations]]
+    build = true
+    default = "false"
+    name = "BP_DISABLE_SBOM"
+    description = "Skip cataloguing node_modules for the SBOM"
+
+[[targets]]
+  os = "linux"
+  arch = "amd64"
+
+[[targets]]
+  os = "linux"
+  arch = "arm64"

@@ -1,0 +1,88 @@
+api = "0.10"
+
+[buildpack]
+  id = "fckfips/node-engine"
+  name = "fck-fips Node Engine"
+  version = "{{VERSION}}"
+  homepage = "https://github.com/taha2samy-3/fck-fips-buildpacks-nodejs"
+  description = "Installs Node.js from the signed Wolfi apk repository and npm from the npm registry"
+  keywords = ["nodejs", "node", "npm", "wolfi", "fips"]
+  sbom-formats = ["application/vnd.cyclonedx+json", "application/spdx+json"]
+
+  [[buildpack.licenses]]
+    type = "Apache-2.0"
+    uri = "https://github.com/taha2samy-3/fck-fips-buildpacks-nodejs/blob/main/LICENSE"
+
+[metadata]
+  [metadata.default-versions]
+    node = "24"
+
+  [[metadata.configurations]]
+    build = true
+    name = "BP_NODE_VERSION"
+    description = "Node.js version or range (24, 22.11.0, ^20.10, lts/jod); overrides .nvmrc, .node-version and engines.node"
+
+  [[metadata.configurations]]
+    build = true
+    name = "BP_NODE_PROJECT_PATH"
+    description = "Directory of the app inside the source tree, for monorepos"
+
+  [[metadata.configurations]]
+    build = true
+    default = "false"
+    name = "BP_NODE_OPTIMIZE_MEMORY"
+    description = "Size the V8 heap to 75% of the container memory limit at launch"
+
+  [[metadata.configurations]]
+    build = true
+    name = "BP_NPM_VERSION"
+    description = "npm version or range; defaults to the npm that ships with the selected Node.js release"
+
+  [[metadata.configurations]]
+    build = true
+    default = "https://registry.npmjs.org"
+    name = "BP_NPM_REGISTRY"
+    description = "Registry npm itself is downloaded from"
+
+  [[metadata.configurations]]
+    build = true
+    default = "https://packages.wolfi.dev/os"
+    name = "BP_WOLFI_REPOSITORY"
+    description = "Wolfi repository or mirror; its index must still carry Wolfi's signature"
+
+  [[metadata.configurations]]
+    build = true
+    default = "https://nodejs.org/dist"
+    name = "BP_NODE_DIST_URL"
+    description = "Where to look up the npm version bundled with each Node.js release"
+
+  [[metadata.configurations]]
+    build = true
+    default = "false"
+    name = "BP_OPENSSL_FIPS"
+    description = "Require the openssl-fips buildpack, verify FIPS mode at build time and run node with --force-fips"
+
+  [[metadata.configurations]]
+    launch = true
+    default = "false"
+    name = "BPL_DEBUG_ENABLED"
+    description = "Start node with --inspect"
+
+  [[metadata.configurations]]
+    launch = true
+    default = "9229"
+    name = "BPL_DEBUG_PORT"
+    description = "Inspector port, bound to 127.0.0.1"
+
+  [[metadata.configurations]]
+    launch = true
+    name = "MEMORY_AVAILABLE"
+    description = "Memory in MB to size the heap for, instead of the cgroup limit"
+
+[[targets]]
+  os = "linux"
+  arch = "amd64"
+
+[[targets]]
+  os = "linux"
+  arch = "arm64"

@@ -1,0 +1,44 @@
+version: "2"
+
+linters:
+  default: standard
+  enable:
+    - bodyclose
+    - errorlint
+    - gocritic
+    - gosec
+    - misspell
+    - nolintlint
+    - revive
+    - unconvert
+    - unparam
+    - usestdlibvars
+  settings:
+    gosec:
+      excludes:
+        - G104 # errcheck covers unchecked errors, with the usual Close() exemptions
+        - G204 # running pnpm/node with computed arguments is the job
+        - G301 # layer directories are 0755 by convention
+        - G302
+        - G304 # paths come from the CNB platform, not from users
+        - G703 # same, through taint analysis
+        - G306
+    revive:
+      rules:
+        - name: exported
+          disabled: true # Paketo-style packages export constants without doc comments
+  exclusions:
+    presets:
+      - std-error-handling
+    rules:
+      - path: _test\.go
+        linters: [gosec, errcheck, unparam]
+
+formatters:
+  enable:
+    - gofmt
+    - goimports
+  settings:
+    goimports:
+      local-prefixes:
+        - github.com/taha2samy-3/fck-fips-buildpacks-nodejs

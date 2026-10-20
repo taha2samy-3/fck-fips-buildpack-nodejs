@@ -1,0 +1,189 @@
+name: Release
+
+# Pushing a tag vX.Y.Z publishes everything to GHCR as signed OCI artifacts:
+#   ghcr.io/<owner>/fck-fips/{build,run,run-distroless}:X.Y.Z   stack images
+#   ghcr.io/<owner>/fck-fips/<buildpack>:X.Y.Z                    buildpackages
+#   ghcr.io/<owner>/fck-fips/builder-nodejs:X.Y.Z                 builder
+#   ghcr.io/<owner>/fck-fips/cnb/<buildpack>:X.Y.Z                .cnb files (oras)
+# Every digest is signed with cosign (keyless) and gets a SLSA provenance
+# attestation; the .cnb files and SHA256SUMS are attached to the GitHub release.
+on:
+  push:
+    tags: ["v*.*.*"]
+
+permissions: {}
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    name: Publish
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    permissions:
+      contents: read
+      packages: write
+      id-token: write # cosign keyless signing
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+      registry: ${{ steps.version.outputs.registry }}
+      build_digest: ${{ steps.artifacts.outputs.build_digest }}
+      run_digest: ${{ steps.artifacts.outputs.run_digest }}
+      run_distroless_digest: ${{ steps.artifacts.outputs.run_distroless_digest }}
+      node_engine_digest: ${{ steps.artifacts.outputs.node_engine_digest }}
+      openssl_fips_digest: ${{ steps.artifacts.outputs.openssl_fips_digest }}
+      pnpm_digest: ${{ steps.artifacts.outputs.pnpm_digest }}
+      pnpm_install_digest: ${{ steps.artifacts.outputs.pnpm_install_digest }}
+      nodejs_digest: ${{ steps.artifacts.outputs.nodejs_digest }}
+      builder_nodejs_digest: ${{ steps.artifacts.outputs.builder_nodejs_digest }}
+      cnb_node_engine_digest: ${{ steps.artifacts.outputs.cnb_node_engine_digest }}
+      cnb_openssl_fips_digest: ${{ steps.artifacts.outputs.cnb_openssl_fips_digest }}
+      cnb_pnpm_digest: ${{ steps.artifacts.outputs.cnb_pnpm_digest }}
+      cnb_pnpm_install_digest: ${{ steps.artifacts.outputs.cnb_pnpm_install_digest }}
+      cnb_nodejs_digest: ${{ steps.artifacts.outputs.cnb_nodejs_digest }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: jdx/mise-action@fc42bcc7ddbf51124c30f95a877a0c5168a3bfde # v5.2.1
+      - uses: docker/setup-qemu-action@99012661954931238ded8c8b007157a8430204e1 # v4.4.0
+      - uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
+      - uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f # v4.6.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Version and registry
+        id: version
+        env:
+          TAG: ${{ github.ref_name }}
+          OWNER: ${{ github.repository_owner }}
+        run: |
+          version="${TAG#v}"
+          if [[ "${version}" != "$(tr -d '[:space:]' < VERSION)" ]]; then
+            echo "::error::tag ${TAG} does not match VERSION ($(cat VERSION))"
+            exit 1
+          fi
+          echo "version=${version}" >> "$GITHUB_OUTPUT"
+          echo "registry=ghcr.io/${OWNER,,}/fck-fips" >> "$GITHUB_OUTPUT"
+
+      - name: Stack images (linux/amd64, linux/arm64)
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+          REGISTRY: ${{ steps.version.outputs.registry }}
+        run: |
+          for img in build run run-distroless; do
+            docker buildx build stack \
+              --file "stack/${img}.Dockerfile" \
+              --platform linux/amd64,linux/arm64 \
+              --tag "${REGISTRY}/${img}:${VERSION}" \
+              --label "org.opencontainers.image.version=${VERSION}" \
+              --label "org.opencontainers.image.revision=${GITHUB_SHA}" \
+              --provenance=false \
+              --push
+          done
+
+      - name: Buildpacks, meta buildpack and builder
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+          REGISTRY: ${{ steps.version.outputs.registry }}
+          TMPDIR: ${{ runner.temp }}
+        run: ./scripts/package.sh --publish --version "${VERSION}" --registry "${REGISTRY}"
+
+      - name: Sign images, push .cnb artifacts
+        id: artifacts
+        env:
+          VERSION: ${{ steps.version.outputs.version }}
+          REGISTRY: ${{ steps.version.outputs.registry }}
+        run: ./scripts/release-artifacts.sh --version "${VERSION}" --registry "${REGISTRY}"
+
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: release-files
+          path: |
+            build/cnb/*.cnb
+            build/cnb/SHA256SUMS
+            build/digests.txt
+
+  attest:
+    name: Attest ${{ matrix.image }}
+    needs: publish
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write
+      attestations: write
+      packages: write
+    strategy:
+      matrix:
+        # key: the output name prefix written by scripts/release-artifacts.sh
+        include:
+          - { image: build, key: build }
+          - { image: run, key: run }
+          - { image: run-distroless, key: run_distroless }
+          - { image: node-engine, key: node_engine }
+          - { image: openssl-fips, key: openssl_fips }
+          - { image: pnpm, key: pnpm }
+          - { image: pnpm-install, key: pnpm_install }
+          - { image: nodejs, key: nodejs }
+          - { image: builder-nodejs, key: builder_nodejs }
+          - { image: cnb/node-engine, key: cnb_node_engine }
+          - { image: cnb/openssl-fips, key: cnb_openssl_fips }
+          - { image: cnb/pnpm, key: cnb_pnpm }
+          - { image: cnb/pnpm-install, key: cnb_pnpm_install }
+          - { image: cnb/nodejs, key: cnb_nodejs }
+    steps:
+      - uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f # v4.6.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4.2.2
+        with:
+          subject-name: ${{ needs.publish.outputs.registry }}/${{ matrix.image }}
+          subject-digest: ${{ needs.publish.outputs[format('{0}_digest', matrix.key)] }}
+          push-to-registry: true
+
+  github-release:
+    name: GitHub release
+    needs: [publish, attest]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: release-files
+      - name: Create release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          TAG: ${{ github.ref_name }}
+          REGISTRY: ${{ needs.publish.outputs.registry }}
+          VERSION: ${{ needs.publish.outputs.version }}
+        run: |
+          {
+            echo "## Builder"
+            echo
+            echo '```sh'
+            echo "pack build my-app --builder ${REGISTRY}/builder-nodejs:${VERSION}"
+            echo "pack build my-app --builder ${REGISTRY}/builder-nodejs:${VERSION} --env BP_OPENSSL_FIPS=true"
+            echo '```'
+            echo
+            echo "## Digests"
+            echo
+            echo '```'
+            cat digests.txt
+            echo '```'
+            echo
+            echo "Verify a signature:"
+            echo
+            echo '```sh'
+            echo "cosign verify ${REGISTRY}/builder-nodejs:${VERSION} \\"
+            echo "  --certificate-identity-regexp 'https://github.com/${GITHUB_REPOSITORY}/.github/workflows/release.yml@.*' \\"
+            echo "  --certificate-oidc-issuer https://token.actions.githubusercontent.com"
+            echo '```'
+          } > notes.md
+          gh release create "${TAG}" --repo "${GITHUB_REPOSITORY}" --title "${TAG}" \
+            --notes-file notes.md --generate-notes cnb/*.cnb cnb/SHA256SUMS
