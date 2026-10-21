@@ -105,10 +105,12 @@ sed "s/{{VERSION}}/${VERSION}/g" buildpacks/nodejs/buildpack.toml > "${meta}/bui
 } > "${meta}/package.toml"
 
 if [[ "${PUBLISH}" == true ]]; then
+  # package.toml sits in the meta buildpack's directory with uri = ".", so no
+  # --path: pack refuses --config and --path together.
   pack buildpack package "${REGISTRY}/nodejs:${VERSION}" --config "${meta}/package.toml" \
-    --path "${meta}" "${target_flags[@]}" --publish
+    "${target_flags[@]}" --publish
   pack buildpack package "${OUT}/cnb/nodejs.cnb" --config "${meta}/package.toml" \
-    --path "${meta}" "${target_flags[@]}" --format file
+    "${target_flags[@]}" --format file
   meta_uri="docker://${REGISTRY}/nodejs:${VERSION}"
 else
   pack buildpack package "${OUT}/nodejs.cnb" --config "${meta}/package.toml" --format file \
