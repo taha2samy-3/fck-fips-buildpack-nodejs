@@ -152,8 +152,7 @@
       ],
       "matchStrings": [
         "# renovate: datasource=(?<datasource>\\S+) depName=(?<depName>\\S+)\\s+[A-Z0-9_]+_VERSION:\\s*\"?(?<currentValue>[^@\"\\s]+)(?:@(?<currentDigest>sha256:[a-f0-9]{64}))?\"?"
-      ],
-      "autoReplaceStringTemplate": "# renovate: datasource={{{datasource}}} depName={{{depName}}}\n  RENOVATE_VERSION: {{{newValue}}}{{#if newDigest}}@{{{newDigest}}}{{/if}}"
+      ]
     }
   ]
 }
