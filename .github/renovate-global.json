@@ -1,0 +1,13 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-global-schema.json",
+  "description": "Global (self-hosted) configuration for .github/workflows/renovate.yml. The per-repository rules live in renovate.json.",
+  "platform": "github",
+  "repositories": ["taha2samy-3/fck-fips-buildpack-nodejs"],
+  "onboarding": false,
+  "requireConfig": "required",
+  "branchPrefix": "renovate-self/",
+  "platformCommit": "enabled",
+  "dependencyDashboardTitle": "Dependency Dashboard (self-hosted Renovate)",
+  "allowedEnv": [],
+  "allowScripts": false
+}
