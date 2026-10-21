@@ -17,7 +17,7 @@ const artifacts = [
   ['nodejs', 'Meta buildpack (buildpackage image)'],
   ['node-engine, openssl-fips, pnpm, pnpm-install', 'Buildpackage images, linux/amd64 + linux/arm64'],
   ['cnb/<buildpack>', 'The same buildpacks as .cnb files, pushed with oras'],
-  ['build, run, run-distroless', 'Stack images'],
+  ['build, run, run-distroless', 'Stack images, published on their own schedule: :latest (rolling) and :YYYYMMDD.N (immutable)'],
 ];
 ---
 
@@ -77,7 +77,23 @@ oras pull ${registry}/cnb/node-engine:${version}`}</code></pre>
   </section>
 
   <section class="reveal">
-    <h2 data-n="5">Keeping dependencies current</h2>
+    <h2 data-n="5">OS updates without a release</h2>
+    <p>
+      The stack images are rebuilt by their own workflow, not by releases: every day it rebuilds them and compares the
+      installed packages (recorded in <code>/usr/share/fckfips/stack-packages.txt</code>) with the published images, and
+      publishes only when something changed; a change under <code>stack/</code> always publishes. The builder runs apps on{' '}
+      <code>run:latest</code>, so applying an OS fix to an app that is already built is a rebase, not a rebuild:
+    </p>
+    <pre><code>{`pack rebase my-app   # new run image underneath, same app layers`}</code></pre>
+    <p>
+      Superseded versions are removed weekly by <code>tools/ghcr-cleanup</code>, which deletes an untagged version only when
+      nothing kept reaches it: per-architecture manifests of multi-arch tags and the signatures and attestations of kept
+      images stay, so a cleanup cannot break a tag.
+    </p>
+  </section>
+
+  <section class="reveal">
+    <h2 data-n="6">Keeping dependencies current</h2>
     <p>
       Renovate (<code>config:best-practices</code>) updates Go modules, the Paketo buildpacks in the meta buildpack,
       the lifecycle, base image digests, GitHub Actions SHAs and the tools in <code>mise.toml</code>. Updates wait three

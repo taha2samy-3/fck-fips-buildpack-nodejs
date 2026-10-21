@@ -9,7 +9,9 @@ Please do not open a public issue. You will get an answer within 7 days.
 ## Supply chain
 
 Releases are built only by `.github/workflows/release.yml` on GitHub-hosted
-runners, from a version tag, and publish to `ghcr.io/taha2samy-3/fck-fips/*`:
+runners, from a version tag; the stack images only by
+`.github/workflows/stack.yml`, on their own schedule. Both publish to
+`ghcr.io/taha2samy-3/fck-fips/*`:
 
 - every image and `.cnb` artifact is signed with cosign keyless signing
   (GitHub OIDC, no long-lived keys);

@@ -1,0 +1,56 @@
+name: GHCR cleanup
+
+# Deletes dangling versions of the fck-fips container packages: untagged,
+# older than the grace period, and not reachable from anything kept. Unlike
+# generic "delete untagged" actions it keeps the per-architecture manifests of
+# multi-arch tags and the attestations, signatures and SBOMs of kept images,
+# so it cannot break a tag. See tools/ghcr-cleanup.
+#
+# The repository needs the Admin role on each package to delete versions
+# (package settings -> Manage Actions access); packages this repository
+# published itself have it.
+on:
+  schedule:
+    - cron: "41 3 * * 0"
+  workflow_dispatch:
+    inputs:
+      delete:
+        description: Delete (unchecked = dry run, report only)
+        type: boolean
+        default: false
+      grace:
+        description: Keep versions younger than this
+        type: string
+        default: 72h
+
+permissions: {}
+
+# Its own group: sharing one with release/stack could cancel a pending
+# release. Pushes in progress are protected by the grace period instead.
+concurrency:
+  group: ghcr-cleanup
+  cancel-in-progress: false
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: jdx/mise-action@fc42bcc7ddbf51124c30f95a877a0c5168a3bfde # v5.2.1
+      - name: Clean up
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          OWNER: ${{ github.repository_owner }}
+          # Scheduled runs delete; manual runs only when asked to.
+          DELETE: ${{ github.event_name == 'schedule' || inputs.delete }}
+          GRACE: ${{ inputs.grace || '72h' }}
+        run: |
+          args=(-owner "${OWNER}" -grace "${GRACE}")
+          if [[ "${DELETE}" == "true" ]]; then args+=(-delete); fi
+          go run ./tools/ghcr-cleanup "${args[@]}"

@@ -50,10 +50,20 @@ npm-install, yarn, yarn-install, node-start, npm-start, node-run-script and the 
 
 ## Releases
 
-Pushing a tag `vX.Y.Z` with a matching `CHANGELOG.md` entry publishes to `ghcr.io/taha2samy-3/fck-fips/`:
-the builder, every buildpack (as an image and as `.cnb` files), and the stack images, for linux/amd64 and
-linux/arm64. Each artifact is signed with cosign (keyless) and carries SLSA v1.0 Build L3 provenance; see
-[SECURITY.md](SECURITY.md) for how to verify them.
+Pushing a tag `vX.Y.Z` with a matching `CHANGELOG.md` entry publishes to `ghcr.io/taha2samy-3/fck-fips/`
+the builder and every buildpack (as an image and as `.cnb` files), for linux/amd64 and linux/arm64.
+
+The stack images (`build`, `run`, `run-distroless`) are published separately, by the Stack images
+workflow: daily when Wolfi ships package updates, and whenever `stack/` changes. The builder uses
+`run:latest`, so OS fixes reach existing apps without rebuilding them:
+
+```sh
+pack rebase my-app    # swap in the newest run image; the app layers stay as they are
+```
+
+Every artifact is signed with cosign (keyless) and carries SLSA v1.0 Build L3 provenance; see
+[SECURITY.md](SECURITY.md) for how to verify them. A weekly job removes dangling registry versions
+without touching anything a tag still needs (`tools/ghcr-cleanup`).
 
 ## Development
 

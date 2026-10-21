@@ -8,6 +8,22 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+### Changed
+
+- The stack images (`build`, `run`, `run-distroless`) are published by their
+  own workflow, independently of releases: daily when Wolfi packages change,
+  and whenever `stack/` changes. They are tagged `:latest` (rolling) and
+  `:YYYYMMDD.N` (immutable). The builder uses `run:latest`, so `pack rebase`
+  moves apps to the newest run image without a new buildpack release. Each
+  image records its installed packages in `/usr/share/fckfips/stack-packages.txt`.
+
+### Added
+
+- `tools/ghcr-cleanup` and a weekly workflow that delete dangling GHCR
+  versions without breaking tags: per-architecture manifests of multi-arch
+  images, and attestations, signatures and SBOMs of kept images, are never
+  deleted; neither is anything younger than 72 hours or unreadable.
+
 ## [1.0.0] - 2026-10-21
 
 Rewrite of the Python buildpacks and the Paketo forks as one Go project.
