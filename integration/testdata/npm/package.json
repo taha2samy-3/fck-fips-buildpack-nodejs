@@ -2,7 +2,7 @@
   "name": "npm-app",
   "version": "1.0.0",
   "private": true,
-  "engines": { "node": "22" },
+  "engines": { "node": "24" },
   "scripts": { "start": "node server.js" },
   "dependencies": { "ms": "2.1.3" }
 }
