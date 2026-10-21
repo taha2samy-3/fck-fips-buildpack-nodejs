@@ -33,7 +33,7 @@ concurrency:
 jobs:
   publish:
     name: Build and publish
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     timeout-minutes: 60
     permissions:
       contents: read
@@ -86,7 +86,7 @@ jobs:
     name: Attest ${{ matrix.image }}
     needs: publish
     if: needs.publish.outputs.published == 'true'
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-26.04
     permissions:
       id-token: write
       attestations: write
