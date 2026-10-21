@@ -12,7 +12,7 @@ import (
 	"github.com/Masterminds/semver/v3"
 	"github.com/paketo-buildpacks/packit/v2"
 
-	"github.com/taha2samy-3/fck-fips-buildpacks-nodejs/internal/apk"
+	"github.com/taha2samy-3/fck-fips-buildpack-nodejs/internal/apk"
 )
 
 // ltsCodenames maps release codenames, as used in .nvmrc ("lts/iron"), to

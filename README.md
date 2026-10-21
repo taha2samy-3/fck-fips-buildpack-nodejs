@@ -11,9 +11,9 @@
 </p>
 
 <p align="center">
-  <a href="https://taha2samy-3.github.io/fck-fips-buildpacks-nodejs/">Documentation</a> ·
-  <a href="https://taha2samy-3.github.io/fck-fips-buildpacks-nodejs/configuration/">Configuration</a> ·
-  <a href="https://taha2samy-3.github.io/fck-fips-buildpacks-nodejs/fips/">FIPS</a> ·
+  <a href="https://taha2samy-3.github.io/fck-fips-buildpack-nodejs/">Documentation</a> ·
+  <a href="https://taha2samy-3.github.io/fck-fips-buildpack-nodejs/configuration/">Configuration</a> ·
+  <a href="https://taha2samy-3.github.io/fck-fips-buildpack-nodejs/fips/">FIPS</a> ·
   <a href="CHANGELOG.md">Changelog</a>
 </p>
 
@@ -32,7 +32,7 @@ The builder detects pnpm, yarn or npm from the lockfile, takes the Node.js versi
 > image goes through the OpenSSL FIPS Provider 3.1.2, a FIPS 140-3 validated cryptographic module
 > ([CMVP #4985](https://csrc.nist.gov/projects/cryptographic-module-validation-program/certificate/4985)).
 > The validation belongs to the module. This project and the images it builds are **not FIPS certified**.
-> Wolfi is not one of the module's tested operational environments; see [FIPS](https://taha2samy-3.github.io/fck-fips-buildpacks-nodejs/fips/).
+> Wolfi is not one of the module's tested operational environments; see [FIPS](https://taha2samy-3.github.io/fck-fips-buildpack-nodejs/fips/).
 
 ## Buildpacks
 
@@ -46,7 +46,7 @@ The builder detects pnpm, yarn or npm from the lockfile, takes the Node.js versi
 
 This builder extends [Paketo's Node.js buildpack](https://github.com/paketo-buildpacks/nodejs) rather than replacing it:
 npm-install, yarn, yarn-install, node-start, npm-start, node-run-script and the utility buildpacks are Paketo's, unchanged.
-[What is reused, replaced and added](https://taha2samy-3.github.io/fck-fips-buildpacks-nodejs/paketo/).
+[What is reused, replaced and added](https://taha2samy-3.github.io/fck-fips-buildpack-nodejs/paketo/).
 
 ## Releases
 

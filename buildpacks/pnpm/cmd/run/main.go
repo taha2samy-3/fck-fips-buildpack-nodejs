@@ -8,10 +8,10 @@ import (
 	"github.com/paketo-buildpacks/packit/v2/chronos"
 	"github.com/paketo-buildpacks/packit/v2/scribe"
 
-	"github.com/taha2samy-3/fck-fips-buildpacks-nodejs/buildpacks/pnpm"
-	"github.com/taha2samy-3/fck-fips-buildpacks-nodejs/internal/env"
-	"github.com/taha2samy-3/fck-fips-buildpacks-nodejs/internal/fetch"
-	"github.com/taha2samy-3/fck-fips-buildpacks-nodejs/internal/npm"
+	"github.com/taha2samy-3/fck-fips-buildpack-nodejs/buildpacks/pnpm"
+	"github.com/taha2samy-3/fck-fips-buildpack-nodejs/internal/env"
+	"github.com/taha2samy-3/fck-fips-buildpack-nodejs/internal/fetch"
+	"github.com/taha2samy-3/fck-fips-buildpack-nodejs/internal/npm"
 )
 
 func main() {

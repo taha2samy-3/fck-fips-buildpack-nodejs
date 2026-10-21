@@ -191,12 +191,12 @@ func spdx(name string, comps []Component) ([]byte, error) {
 		"dataLicense":       "CC0-1.0",
 		"SPDXID":            "SPDXRef-DOCUMENT",
 		"name":              name,
-		"documentNamespace": "https://github.com/taha2samy-3/fck-fips-buildpacks-nodejs/sbom/" + hex.EncodeToString(h.Sum(nil))[:32],
+		"documentNamespace": "https://github.com/taha2samy-3/fck-fips-buildpack-nodejs/sbom/" + hex.EncodeToString(h.Sum(nil))[:32],
 		"creationInfo": map[string]any{
 			// A fixed timestamp keeps layers reproducible, the same choice the
 			// lifecycle makes for file times.
 			"created":  time.Unix(315532801, 0).UTC().Format(time.RFC3339),
-			"creators": []string{"Tool: fck-fips-buildpacks-nodejs"},
+			"creators": []string{"Tool: fck-fips-buildpack-nodejs"},
 		},
 		"packages":      pkgs,
 		"relationships": rels,

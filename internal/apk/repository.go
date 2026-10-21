@@ -9,8 +9,8 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/taha2samy-3/fck-fips-buildpacks-nodejs/internal/archive"
-	"github.com/taha2samy-3/fck-fips-buildpacks-nodejs/internal/fetch"
+	"github.com/taha2samy-3/fck-fips-buildpack-nodejs/internal/archive"
+	"github.com/taha2samy-3/fck-fips-buildpack-nodejs/internal/fetch"
 )
 
 // Repository is a signed apk repository such as https://packages.wolfi.dev/os.

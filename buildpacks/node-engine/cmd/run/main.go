@@ -9,7 +9,7 @@ import (
 	"github.com/paketo-buildpacks/packit/v2/chronos"
 	"github.com/paketo-buildpacks/packit/v2/scribe"
 
-	nodeengine "github.com/taha2samy-3/fck-fips-buildpacks-nodejs/buildpacks/node-engine"
+	nodeengine "github.com/taha2samy-3/fck-fips-buildpack-nodejs/buildpacks/node-engine"
 )
 
 func main() {

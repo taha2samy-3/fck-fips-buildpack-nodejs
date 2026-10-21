@@ -10,7 +10,7 @@ import (
 	"github.com/Masterminds/semver/v3"
 	"github.com/paketo-buildpacks/packit/v2/scribe"
 
-	"github.com/taha2samy-3/fck-fips-buildpacks-nodejs/internal/env"
+	"github.com/taha2samy-3/fck-fips-buildpack-nodejs/internal/env"
 )
 
 // fipsCheck runs inside node under the FIPS configuration. It fails unless

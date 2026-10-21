@@ -15,7 +15,7 @@ import (
 	"io"
 	"strings"
 
-	"github.com/taha2samy-3/fck-fips-buildpacks-nodejs/internal/archive"
+	"github.com/taha2samy-3/fck-fips-buildpack-nodejs/internal/archive"
 )
 
 const maxSignatureSize = 64 * 1024

@@ -1,4 +1,4 @@
-module github.com/taha2samy-3/fck-fips-buildpacks-nodejs
+module github.com/taha2samy-3/fck-fips-buildpack-nodejs
 
 go 1.26.8
 

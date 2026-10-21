@@ -15,7 +15,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/taha2samy-3/fck-fips-buildpacks-nodejs/internal/fetch"
+	"github.com/taha2samy-3/fck-fips-buildpack-nodejs/internal/fetch"
 )
 
 func packument(versions ...string) Packument {

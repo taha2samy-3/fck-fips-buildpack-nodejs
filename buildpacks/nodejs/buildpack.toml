@@ -4,13 +4,13 @@ api = "0.10"
   id = "fckfips/nodejs"
   name = "fck-fips Node.js"
   version = "{{VERSION}}"
-  homepage = "https://github.com/taha2samy-3/fck-fips-buildpacks-nodejs"
+  homepage = "https://github.com/taha2samy-3/fck-fips-buildpack-nodejs"
   description = "Node.js apps on Wolfi with npm, yarn or pnpm, optionally with a FIPS 140-3 validated OpenSSL module (BP_OPENSSL_FIPS=true)"
   keywords = ["nodejs", "node", "npm", "yarn", "pnpm", "wolfi", "fips"]
 
   [[buildpack.licenses]]
     type = "Apache-2.0"
-    uri = "https://github.com/taha2samy-3/fck-fips-buildpacks-nodejs/blob/main/LICENSE"
+    uri = "https://github.com/taha2samy-3/fck-fips-buildpack-nodejs/blob/main/LICENSE"
 
 # Groups are tried in order; the first whose required buildpacks all pass wins.
 # fckfips/openssl-fips passes only with BP_OPENSSL_FIPS=true, and node-engine then requires it.

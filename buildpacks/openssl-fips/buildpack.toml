@@ -4,14 +4,14 @@ api = "0.10"
   id = "fckfips/openssl-fips"
   name = "fck-fips OpenSSL FIPS Provider"
   version = "{{VERSION}}"
-  homepage = "https://github.com/taha2samy-3/fck-fips-buildpacks-nodejs"
+  homepage = "https://github.com/taha2samy-3/fck-fips-buildpack-nodejs"
   description = "Uses the FIPS 140-3 validated OpenSSL FIPS Provider 3.1.2 (CMVP #4985) for all OpenSSL cryptography; validation covers the module, not the image"
   keywords = ["fips", "openssl", "fips-140-3"]
   sbom-formats = ["application/vnd.cyclonedx+json", "application/spdx+json"]
 
   [[buildpack.licenses]]
     type = "Apache-2.0"
-    uri = "https://github.com/taha2samy-3/fck-fips-buildpacks-nodejs/blob/main/LICENSE"
+    uri = "https://github.com/taha2samy-3/fck-fips-buildpack-nodejs/blob/main/LICENSE"
 
 [metadata]
   # The validated module. Change it only when NIST lists a new certificate,

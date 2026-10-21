@@ -6,7 +6,7 @@ import (
 
 	"github.com/paketo-buildpacks/packit/v2"
 
-	"github.com/taha2samy-3/fck-fips-buildpacks-nodejs/internal/apk"
+	"github.com/taha2samy-3/fck-fips-buildpack-nodejs/internal/apk"
 )
 
 func TestNormalizeVersion(t *testing.T) {

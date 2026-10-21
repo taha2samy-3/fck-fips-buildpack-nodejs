@@ -5,9 +5,9 @@ import (
 
 	"github.com/paketo-buildpacks/packit/v2"
 
-	"github.com/taha2samy-3/fck-fips-buildpacks-nodejs/internal/apk"
-	"github.com/taha2samy-3/fck-fips-buildpacks-nodejs/internal/fetch"
-	"github.com/taha2samy-3/fck-fips-buildpacks-nodejs/internal/keys"
+	"github.com/taha2samy-3/fck-fips-buildpack-nodejs/internal/apk"
+	"github.com/taha2samy-3/fck-fips-buildpack-nodejs/internal/fetch"
+	"github.com/taha2samy-3/fck-fips-buildpack-nodejs/internal/keys"
 )
 
 type liveRepository struct{ repo apk.Repository }

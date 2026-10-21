@@ -23,8 +23,8 @@ import (
 
 	"github.com/Masterminds/semver/v3"
 
-	"github.com/taha2samy-3/fck-fips-buildpacks-nodejs/internal/archive"
-	"github.com/taha2samy-3/fck-fips-buildpacks-nodejs/internal/fetch"
+	"github.com/taha2samy-3/fck-fips-buildpack-nodejs/internal/archive"
+	"github.com/taha2samy-3/fck-fips-buildpack-nodejs/internal/fetch"
 )
 
 // DefaultRegistry is the public npm registry.

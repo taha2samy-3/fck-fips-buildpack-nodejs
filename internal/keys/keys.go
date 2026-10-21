@@ -6,7 +6,7 @@ import (
 	_ "embed"
 	"fmt"
 
-	"github.com/taha2samy-3/fck-fips-buildpacks-nodejs/internal/apk"
+	"github.com/taha2samy-3/fck-fips-buildpack-nodejs/internal/apk"
 )
 
 // Wolfi signs https://packages.wolfi.dev/os.

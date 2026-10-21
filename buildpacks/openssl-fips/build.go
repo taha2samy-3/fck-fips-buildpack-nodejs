@@ -16,9 +16,9 @@ import (
 	"github.com/paketo-buildpacks/packit/v2/chronos"
 	"github.com/paketo-buildpacks/packit/v2/scribe"
 
-	"github.com/taha2samy-3/fck-fips-buildpacks-nodejs/internal/apk"
-	"github.com/taha2samy-3/fck-fips-buildpacks-nodejs/internal/env"
-	"github.com/taha2samy-3/fck-fips-buildpacks-nodejs/internal/sbom"
+	"github.com/taha2samy-3/fck-fips-buildpack-nodejs/internal/apk"
+	"github.com/taha2samy-3/fck-fips-buildpack-nodejs/internal/env"
+	"github.com/taha2samy-3/fck-fips-buildpack-nodejs/internal/sbom"
 )
 
 const (

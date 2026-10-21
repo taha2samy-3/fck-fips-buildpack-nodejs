@@ -15,7 +15,7 @@ import (
 	"github.com/paketo-buildpacks/packit/v2/chronos"
 	"github.com/paketo-buildpacks/packit/v2/scribe"
 
-	"github.com/taha2samy-3/fck-fips-buildpacks-nodejs/internal/npm"
+	"github.com/taha2samy-3/fck-fips-buildpack-nodejs/internal/npm"
 )
 
 func writeFile(t *testing.T, path, content string) {

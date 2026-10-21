@@ -14,7 +14,7 @@ import (
 	"github.com/paketo-buildpacks/packit/v2/sbom"
 	"github.com/paketo-buildpacks/packit/v2/scribe"
 
-	"github.com/taha2samy-3/fck-fips-buildpacks-nodejs/internal/env"
+	"github.com/taha2samy-3/fck-fips-buildpack-nodejs/internal/env"
 )
 
 const (

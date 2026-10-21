@@ -50,7 +50,7 @@ for bp in node-engine openssl-fips pnpm pnpm-install nodejs; do
   echo "==> ${ref} (${#files[@]} files)"
   oras push "${ref}" \
     --artifact-type application/vnd.fckfips.buildpack.cnb.v1 \
-    --annotation "org.opencontainers.image.source=https://github.com/taha2samy-3/fck-fips-buildpacks-nodejs" \
+    --annotation "org.opencontainers.image.source=https://github.com/taha2samy-3/fck-fips-buildpack-nodejs" \
     --annotation "org.opencontainers.image.version=${VERSION}" \
     "${files[@]}"
   digest="$(crane digest "${ref}")"

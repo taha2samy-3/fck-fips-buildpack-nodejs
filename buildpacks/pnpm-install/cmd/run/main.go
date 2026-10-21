@@ -13,8 +13,8 @@ import (
 	"github.com/paketo-buildpacks/packit/v2/scribe"
 	"github.com/paketo-buildpacks/packit/v2/servicebindings"
 
-	pnpminstall "github.com/taha2samy-3/fck-fips-buildpacks-nodejs/buildpacks/pnpm-install"
-	"github.com/taha2samy-3/fck-fips-buildpacks-nodejs/internal/env"
+	pnpminstall "github.com/taha2samy-3/fck-fips-buildpack-nodejs/buildpacks/pnpm-install"
+	"github.com/taha2samy-3/fck-fips-buildpack-nodejs/internal/env"
 )
 
 type sbomGenerator struct{}

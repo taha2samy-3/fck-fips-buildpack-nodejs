@@ -6,7 +6,7 @@ package opensslfips
 import (
 	"github.com/paketo-buildpacks/packit/v2"
 
-	"github.com/taha2samy-3/fck-fips-buildpacks-nodejs/internal/env"
+	"github.com/taha2samy-3/fck-fips-buildpack-nodejs/internal/env"
 )
 
 // PlanOpenSSLFIPS is the build plan name this buildpack provides.

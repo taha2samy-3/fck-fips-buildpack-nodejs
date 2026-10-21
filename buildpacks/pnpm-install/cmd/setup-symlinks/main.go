@@ -9,7 +9,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/taha2samy-3/fck-fips-buildpacks-nodejs/buildpacks/pnpm-install/symlinks"
+	"github.com/taha2samy-3/fck-fips-buildpack-nodejs/buildpacks/pnpm-install/symlinks"
 )
 
 func main() {

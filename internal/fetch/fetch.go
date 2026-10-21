@@ -198,5 +198,5 @@ func writeAtomic(path string, r io.Reader) error {
 
 // UserAgent identifies a buildpack to the servers it downloads from.
 func UserAgent(id, version string) string {
-	return "fck-fips-buildpacks-nodejs " + id + "/" + version + " (+https://github.com/taha2samy-3/fck-fips-buildpacks-nodejs)"
+	return "fck-fips-buildpack-nodejs " + id + "/" + version + " (+https://github.com/taha2samy-3/fck-fips-buildpack-nodejs)"
 }

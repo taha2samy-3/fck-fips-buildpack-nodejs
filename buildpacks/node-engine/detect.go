@@ -13,7 +13,7 @@ import (
 	"github.com/paketo-buildpacks/libnodejs"
 	"github.com/paketo-buildpacks/packit/v2"
 
-	"github.com/taha2samy-3/fck-fips-buildpacks-nodejs/internal/env"
+	"github.com/taha2samy-3/fck-fips-buildpack-nodejs/internal/env"
 )
 
 // Build plan names. "node" and "npm" match the Paketo Node.js buildpacks, so

@@ -20,7 +20,7 @@ import (
 	"os"
 	"strings"
 
-	"github.com/taha2samy-3/fck-fips-buildpacks-nodejs/buildpacks/node-engine/launch"
+	"github.com/taha2samy-3/fck-fips-buildpack-nodejs/buildpacks/node-engine/launch"
 )
 
 func main() {

@@ -19,8 +19,8 @@ import (
 	"github.com/paketo-buildpacks/packit/v2/draft"
 	"github.com/paketo-buildpacks/packit/v2/scribe"
 
-	"github.com/taha2samy-3/fck-fips-buildpacks-nodejs/internal/npm"
-	"github.com/taha2samy-3/fck-fips-buildpacks-nodejs/internal/sbom"
+	"github.com/taha2samy-3/fck-fips-buildpack-nodejs/internal/npm"
+	"github.com/taha2samy-3/fck-fips-buildpack-nodejs/internal/sbom"
 )
 
 const (

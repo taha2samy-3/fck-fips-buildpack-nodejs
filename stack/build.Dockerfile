@@ -25,8 +25,8 @@ ENV CNB_USER_ID=${CNB_USER_ID} \
 
 LABEL io.buildpacks.stack.id="io.fckfips.stacks.wolfi" \
       io.buildpacks.base.distro.name="wolfi" \
-      io.buildpacks.base.homepage="https://github.com/taha2samy-3/fck-fips-buildpacks-nodejs" \
+      io.buildpacks.base.homepage="https://github.com/taha2samy-3/fck-fips-buildpack-nodejs" \
       io.buildpacks.base.maintainer="taha2samy-3" \
-      org.opencontainers.image.source="https://github.com/taha2samy-3/fck-fips-buildpacks-nodejs"
+      org.opencontainers.image.source="https://github.com/taha2samy-3/fck-fips-buildpack-nodejs"
 
 USER ${CNB_USER_ID}:${CNB_GROUP_ID}

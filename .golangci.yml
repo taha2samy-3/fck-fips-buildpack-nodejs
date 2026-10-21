@@ -41,4 +41,4 @@ formatters:
   settings:
     goimports:
       local-prefixes:
-        - github.com/taha2samy-3/fck-fips-buildpacks-nodejs
+        - github.com/taha2samy-3/fck-fips-buildpack-nodejs

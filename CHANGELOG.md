@@ -53,5 +53,5 @@ Rewrite of the Python buildpacks and the Paketo forks as one Go project.
 - Node.js debugging with `BPL_DEBUG_ENABLED` (the minimal flavor had no
   inspector).
 
-[Unreleased]: https://github.com/taha2samy-3/fck-fips-buildpacks-nodejs/compare/v2.0.0...HEAD
-[2.0.0]: https://github.com/taha2samy-3/fck-fips-buildpacks-nodejs/releases/tag/v2.0.0
+[Unreleased]: https://github.com/taha2samy-3/fck-fips-buildpack-nodejs/compare/v2.0.0...HEAD
+[2.0.0]: https://github.com/taha2samy-3/fck-fips-buildpack-nodejs/releases/tag/v2.0.0

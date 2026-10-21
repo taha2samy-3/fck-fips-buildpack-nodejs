@@ -9,7 +9,7 @@ import (
 	"github.com/paketo-buildpacks/packit/v2/chronos"
 	"github.com/paketo-buildpacks/packit/v2/scribe"
 
-	opensslfips "github.com/taha2samy-3/fck-fips-buildpacks-nodejs/buildpacks/openssl-fips"
+	opensslfips "github.com/taha2samy-3/fck-fips-buildpack-nodejs/buildpacks/openssl-fips"
 )
 
 func main() {

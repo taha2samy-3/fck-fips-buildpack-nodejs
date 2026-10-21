@@ -3,7 +3,7 @@
 ## Reporting a vulnerability
 
 Report vulnerabilities privately through
-[GitHub security advisories](https://github.com/taha2samy-3/fck-fips-buildpacks-nodejs/security/advisories/new).
+[GitHub security advisories](https://github.com/taha2samy-3/fck-fips-buildpack-nodejs/security/advisories/new).
 Please do not open a public issue. You will get an answer within 7 days.
 
 ## Supply chain
@@ -24,13 +24,13 @@ Verify before you use a release:
 
 ```sh
 slsa-verifier verify-image ghcr.io/taha2samy-3/fck-fips/builder-nodejs@sha256:<digest> \
-  --source-uri github.com/taha2samy-3/fck-fips-buildpacks-nodejs --source-tag v<version>
+  --source-uri github.com/taha2samy-3/fck-fips-buildpack-nodejs --source-tag v<version>
 
 gh attestation verify oci://ghcr.io/taha2samy-3/fck-fips/builder-nodejs:<version> \
-  --repo taha2samy-3/fck-fips-buildpacks-nodejs
+  --repo taha2samy-3/fck-fips-buildpack-nodejs
 
 cosign verify ghcr.io/taha2samy-3/fck-fips/builder-nodejs:<version> \
-  --certificate-identity-regexp 'https://github.com/taha2samy-3/fck-fips-buildpacks-nodejs/.github/workflows/release.yml@.*' \
+  --certificate-identity-regexp 'https://github.com/taha2samy-3/fck-fips-buildpack-nodejs/.github/workflows/release.yml@.*' \
   --certificate-oidc-issuer https://token.actions.githubusercontent.com
 ```
 
