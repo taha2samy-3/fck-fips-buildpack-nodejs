@@ -2,14 +2,14 @@ name: Docs
 
 # Builds the documentation site (docs/, Astro) and publishes it to GitHub
 # Pages. Pull requests only build it, so a broken page fails the check.
-# The configuration reference is generated from buildpacks/*/buildpack.toml,
-# so changes there rebuild the site too.
+# The configuration reference is generated from buildpacks/*/buildpack.toml
+# and the versions list from CHANGELOG.md, so changes there rebuild the site.
 on:
   push:
     branches: [main]
-    paths: [docs/**, buildpacks/*/buildpack.toml, VERSION, .github/workflows/docs.yml]
+    paths: [docs/**, buildpacks/*/buildpack.toml, VERSION, CHANGELOG.md, .github/workflows/docs.yml]
   pull_request:
-    paths: [docs/**, buildpacks/*/buildpack.toml, VERSION, .github/workflows/docs.yml]
+    paths: [docs/**, buildpacks/*/buildpack.toml, VERSION, CHANGELOG.md, .github/workflows/docs.yml]
   workflow_dispatch:
 
 permissions: {}

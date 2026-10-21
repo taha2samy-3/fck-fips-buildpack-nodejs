@@ -1,0 +1,176 @@
+---
+import Base from '../layouts/Base.astro';
+import { releases, unreleased, latest } from '../lib/changelog';
+
+const base = import.meta.env.BASE_URL;
+const repo = 'https://github.com/taha2samy-3/fck-fips-buildpack-nodejs';
+const registry = 'ghcr.io/taha2samy-3/fck-fips';
+const v = latest.version;
+const builder = `${registry}/builder-nodejs:${v}`;
+
+const why = [
+  ['Node.js you can trace', 'Node.js comes from Wolfi packages checked against Wolfi\'s signed index, down to each file\'s hash, and npm, yarn and pnpm against their registry integrity. Every layer gets an SBOM.'],
+  ['FIPS when you need it', 'One variable puts every OpenSSL operation on a FIPS 140-3 validated module (CMVP #4985), verified at build time. Without it, nothing changes.'],
+  ['pnpm, properly', 'Any pnpm release, including native pnpm 12, the exact version package.json pins, and a store cached between builds.'],
+  ['Small, patchable images', 'A minimal Wolfi run image, or a distroless one with no shell. OS fixes ship as new run images: pack rebase applies them without rebuilding the app.'],
+  ['Paketo-compatible', 'Built on Paketo\'s Node.js buildpacks: npm, yarn, node-start and the rest are theirs, unchanged, and their environment variables work the same.'],
+  ['Verifiable releases', 'Every artifact is signed with cosign and carries SLSA v1.0 Build L3 provenance.'],
+];
+
+const date = (d?: string) =>
+  d ? new Date(`${d}T00:00:00Z`).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric', timeZone: 'UTC' }) : '';
+---
+
+<Base title="Usage" description="Why and how to use the fck-fips Node.js builder and buildpacks, and every released version.">
+  <h1>Usage</h1>
+  <p class="lead">
+    Everything you need to build Node.js apps with the fck-fips builder, or to use its buildpacks in your own.
+    The latest release is <strong>{v}</strong>{latest.date && <> ({date(latest.date)})</>}.
+  </p>
+
+  <section class="reveal">
+    <h2 data-n="1">Why use it</h2>
+    <div class="grid grid-3">
+      {why.map(([t, d]) => (
+        <div class="panel"><span class="label">{t}</span><p>{d}</p></div>
+      ))}
+    </div>
+  </section>
+
+  <section class="reveal">
+    <h2 data-n="2">Build an app</h2>
+    <p>You need <a href="https://buildpacks.io/docs/for-platform-operators/how-to/integrate-ci/pack/">pack</a> 0.34 or later and Docker. The builder runs on linux/amd64 and linux/arm64.</p>
+    <pre><code>{`pack build my-app --builder ${builder}
+docker run --rm -p 8080:8080 -e PORT=8080 my-app`}</code></pre>
+    <p>Make it the default so <code>--builder</code> can be left out:</p>
+    <pre><code>{`pack config default-builder ${builder}`}</code></pre>
+    <p>
+      The package manager is picked from the lockfile, the Node.js version from <code>engines.node</code>,{' '}
+      <code>.nvmrc</code> or <code>.node-version</code>, and the start command from <code>scripts.start</code> or a{' '}
+      <code>server.js</code>. Every setting is on the <a href={`${base}configuration/`}>configuration</a> page.
+    </p>
+  </section>
+
+  <section class="reveal">
+    <h2 data-n="3">Common recipes</h2>
+    <h3>FIPS mode</h3>
+    <pre><code>{`pack build my-app --builder ${builder} --env BP_OPENSSL_FIPS=true`}</code></pre>
+    <p>Uses a FIPS 140-3 validated module; the image itself is not FIPS certified. See <a href={`${base}fips/`}>FIPS</a>.</p>
+
+    <h3>Settings in the repository</h3>
+    <pre><code>{`# project.toml
+[_]
+schema-version = "0.2"
+
+[[io.buildpacks.build.env]]
+name = "BP_NODE_VERSION"
+value = "24"
+
+[[io.buildpacks.build.env]]
+name = "BP_NODE_RUN_SCRIPTS"
+value = "build"`}</code></pre>
+
+    <h3>No shell in the image</h3>
+    <pre><code>{`pack build my-app --builder ${builder} --run-image ${registry}/run-distroless:latest`}</code></pre>
+    <p>For apps started by <code>node</code> directly (node-start). Start scripts and Procfiles need the regular run image.</p>
+
+    <h3>In GitHub Actions</h3>
+    <pre><code>{`- uses: buildpacks/github-actions/setup-pack@v6.2.0   # pin by commit SHA in your workflow
+- run: |
+    pack build ghcr.io/\${{ github.repository }}:\${{ github.sha }} \\
+      --builder ${builder} --publish`}</code></pre>
+  </section>
+
+  <section class="reveal">
+    <h2 data-n="4">Keep images patched</h2>
+    <p>
+      The run images are rebuilt on their own schedule when Wolfi ships fixes, independently of buildpack releases. Apps
+      built with this builder use <code>run:latest</code>, so applying the fixes to an image you already have takes seconds
+      and no rebuild:
+    </p>
+    <pre><code>{`pack rebase my-app            # local image
+pack rebase registry/my-app --publish`}</code></pre>
+  </section>
+
+  <section class="reveal">
+    <h2 data-n="5">Use the buildpacks in your own builder</h2>
+    <p>Each buildpack is published as an image and as <code>.cnb</code> files. Reference the meta buildpack, or single ones, in a <code>builder.toml</code>:</p>
+    <pre><code>{`[[buildpacks]]
+  uri = "docker://${registry}/nodejs:${v}"
+
+[[order]]
+  [[order.group]]
+    id = "fckfips/nodejs"
+    version = "${v}"`}</code></pre>
+    <p>Or add them to a single build, or download the files:</p>
+    <pre><code>{`pack build my-app --builder <your-builder> \\
+  --buildpack ${registry}/node-engine:${v} --buildpack ${registry}/pnpm:${v} --buildpack ${registry}/pnpm-install:${v}
+
+oras pull ${registry}/cnb/node-engine:${v}     # node-engine-linux-amd64.cnb, node-engine-linux-arm64.cnb`}</code></pre>
+    <p>The <code>.cnb</code> files are also attached to each <a href={`${repo}/releases`}>GitHub release</a>, with <code>SHA256SUMS</code>. Check signatures and provenance first: <a href={`${base}supply-chain/`}>supply chain</a>.</p>
+  </section>
+
+  <section class="reveal" id="versions">
+    <h2 data-n="6">Versions</h2>
+    <p>
+      Generated from <a href={`${repo}/blob/main/CHANGELOG.md`}>CHANGELOG.md</a> when the site is built. The stack images
+      are versioned separately: <code>:latest</code> and <code>:YYYYMMDD.N</code>.
+    </p>
+
+    <div class="table-scroll">
+      <table>
+        <thead><tr><th>Version</th><th>Released</th><th>Builder</th><th>Links</th></tr></thead>
+        <tbody>
+          {releases.map((r, i) => (
+            <tr>
+              <td><strong>{r.version}</strong>{i === 0 && <span class="tag latest">latest</span>}</td>
+              <td>{date(r.date)}</td>
+              <td><code>{`${registry}/builder-nodejs:${r.version}`}</code></td>
+              <td>
+                <a href={`${repo}/releases/tag/v${r.version}`}>release</a> ·{' '}
+                <a href={`#v${r.version.replaceAll('.', '-')}`}>notes</a>
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+
+    {unreleased && (
+      <details class="panel notes">
+        <summary><span class="label">Unreleased</span>Changes on main since {latest.version}</summary>
+        {unreleased.sections.map((s) => (
+          <>
+            <h3>{s.heading}</h3>
+            <ul>{s.items.map((it) => <li set:html={it} />)}</ul>
+          </>
+        ))}
+      </details>
+    )}
+
+    {releases.map((r, i) => (
+      <details class="panel notes" id={`v${r.version.replaceAll('.', '-')}`} open={i === 0}>
+        <summary><span class="label">{r.version}</span>{date(r.date)}</summary>
+        {r.summary.map((p) => <p set:html={p} />)}
+        {r.sections.map((s) => (
+          <>
+            <h3>{s.heading}</h3>
+            <ul>{s.items.map((it) => <li set:html={it} />)}</ul>
+          </>
+        ))}
+      </details>
+    ))}
+  </section>
+</Base>
+
+<style>
+  .lead { max-width: 46rem; font-size: 1.05rem; }
+  .tag.latest { margin-left: 0.6rem; border-color: var(--ink); color: var(--ink); }
+  .notes { margin: 1.6rem 0; padding-top: 1.6rem; }
+  .notes summary { cursor: pointer; font: 600 0.9rem/1.4 var(--mono); list-style: none; }
+  .notes summary::-webkit-details-marker { display: none; }
+  .notes summary::after { content: ' +'; }
+  .notes[open] summary::after { content: ' −'; }
+  .notes h3 { margin-top: 1.2rem; }
+  .notes li { margin: 0.35rem 0; }
+</style>
