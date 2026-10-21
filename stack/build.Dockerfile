@@ -19,6 +19,10 @@ RUN apk add --no-cache \
  && addgroup -g "${CNB_GROUP_ID}" cnb \
  && adduser -D -u "${CNB_USER_ID}" -G cnb -s /bin/bash cnb
 
+# The installed package list goes into the image: the stack workflow compares
+# it with the published image to decide whether a rebuild changed anything.
+RUN mkdir -p /usr/share/fckfips && apk info -v | sort > /usr/share/fckfips/stack-packages.txt
+
 ENV CNB_USER_ID=${CNB_USER_ID} \
     CNB_GROUP_ID=${CNB_GROUP_ID} \
     CNB_STACK_ID=io.fckfips.stacks.wolfi

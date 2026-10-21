@@ -28,6 +28,11 @@ RUN set -e; \
     chmod 0755 /usr/bin/secrets-entrypoint; \
     ln -sf secrets-entrypoint /usr/bin/envoke
 
+# The installed package list goes into the image: the stack workflow compares
+# it with the published image to decide whether a rebuild changed anything.
+RUN mkdir -p /usr/share/fckfips \
+ && { apk info -v; echo "envoke-${ENVOKE_VERSION}"; } | sort > /usr/share/fckfips/stack-packages.txt
+
 ENV CNB_USER_ID=${CNB_USER_ID} \
     CNB_GROUP_ID=${CNB_GROUP_ID} \
     SSL_CERT_FILE=/etc/ssl/certs/ca-certificates.crt

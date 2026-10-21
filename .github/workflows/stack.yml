@@ -1,0 +1,134 @@
+name: Stack images
+
+# Rebuilds the build, run and run-distroless images on their own schedule,
+# independently of buildpack releases, so OS fixes from Wolfi reach apps
+# through `pack rebase` without a new release:
+#   ghcr.io/<owner>/fck-fips/{build,run,run-distroless}:latest       rolling
+#   ghcr.io/<owner>/fck-fips/{build,run,run-distroless}:YYYYMMDD.N   immutable
+#
+# - a change under stack/ on main (including Renovate's base image bumps) or
+#   a manual run with "force" always publishes;
+# - the daily run publishes only when the installed packages changed.
+# Every digest is signed with cosign, gets SLSA v1.0 Build L3 provenance and a
+# GitHub build attestation, like the release artifacts.
+on:
+  push:
+    branches: [main]
+    paths: [stack/**, scripts/stack.sh, .github/workflows/stack.yml]
+  schedule:
+    - cron: "23 5 * * *"
+  workflow_dispatch:
+    inputs:
+      force:
+        description: Publish even if no package changed
+        type: boolean
+        default: false
+
+permissions: {}
+
+concurrency:
+  group: stack
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    name: Build and publish
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
+    permissions:
+      contents: read
+      packages: write
+      id-token: write # cosign keyless signing
+    outputs:
+      published: ${{ steps.publish.outcome == 'success' }}
+      registry: ${{ steps.vars.outputs.registry }}
+      tag: ${{ steps.publish.outputs.tag }}
+      build_digest: ${{ steps.publish.outputs.build_digest }}
+      run_digest: ${{ steps.publish.outputs.run_digest }}
+      run_distroless_digest: ${{ steps.publish.outputs.run_distroless_digest }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: jdx/mise-action@fc42bcc7ddbf51124c30f95a877a0c5168a3bfde # v5.2.1
+      - uses: docker/setup-qemu-action@99012661954931238ded8c8b007157a8430204e1 # v4.4.0
+      - uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
+      - uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f # v4.6.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Registry
+        id: vars
+        env:
+          OWNER: ${{ github.repository_owner }}
+        run: echo "registry=ghcr.io/${OWNER,,}/fck-fips" >> "$GITHUB_OUTPUT"
+
+      - name: Compare installed packages with the published images
+        id: check
+        if: github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && !inputs.force)
+        env:
+          REGISTRY: ${{ steps.vars.outputs.registry }}
+        run: |
+          ./scripts/stack.sh changed --registry "${REGISTRY}" | tee "${RUNNER_TEMP}/changes.txt"
+          { echo '### Package changes'; echo '```diff'; cat "${RUNNER_TEMP}/changes.txt"; echo '```'; } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Publish (linux/amd64, linux/arm64)
+        id: publish
+        if: steps.check.outcome == 'skipped' || steps.check.outputs.changed == 'true'
+        env:
+          REGISTRY: ${{ steps.vars.outputs.registry }}
+          RUN_NUMBER: ${{ github.run_number }}
+        run: ./scripts/stack.sh publish --registry "${REGISTRY}" --tag "$(date -u +%Y%m%d).${RUN_NUMBER}"
+
+  attest:
+    name: Attest ${{ matrix.image }}
+    needs: publish
+    if: needs.publish.outputs.published == 'true'
+    runs-on: ubuntu-24.04
+    permissions:
+      id-token: write
+      attestations: write
+      packages: write
+    strategy:
+      matrix:
+        include:
+          - { image: build, key: build }
+          - { image: run, key: run }
+          - { image: run-distroless, key: run_distroless }
+    steps:
+      - uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f # v4.6.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4.2.2
+        with:
+          subject-name: ${{ needs.publish.outputs.registry }}/${{ matrix.image }}
+          subject-digest: ${{ needs.publish.outputs[format('{0}_digest', matrix.key)] }}
+          push-to-registry: true
+
+  # SLSA v1.0 Build L3: generated in an isolated reusable workflow. Referenced
+  # by tag, not commit: the generator verifies its own ref.
+  provenance:
+    name: SLSA L3 ${{ matrix.image }}
+    needs: publish
+    if: needs.publish.outputs.published == 'true'
+    permissions:
+      actions: read
+      id-token: write
+      packages: write
+    strategy:
+      matrix:
+        include:
+          - { image: build, key: build }
+          - { image: run, key: run }
+          - { image: run-distroless, key: run_distroless }
+    uses: slsa-framework/slsa-github-generator/.github/workflows/generator_container_slsa3.yml@v2.1.0
+    with:
+      image: ${{ needs.publish.outputs.registry }}/${{ matrix.image }}
+      digest: ${{ needs.publish.outputs[format('{0}_digest', matrix.key)] }}
+      registry-username: ${{ github.actor }}
+    secrets:
+      registry-password: ${{ secrets.GITHUB_TOKEN }}

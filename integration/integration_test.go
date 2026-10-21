@@ -111,7 +111,7 @@ func TestApps(t *testing.T) {
 		{
 			name: "distroless run image",
 			app:  "pnpm",
-			args: []string{"--run-image", "%REGISTRY%/run-distroless:%VERSION%"},
+			args: []string{"--run-image", "%REGISTRY%/run-distroless:latest"},
 			check: func(t *testing.T, r response) {
 				if r.MS != 3600000 {
 					t.Errorf("dependency not installed: %+v", r)

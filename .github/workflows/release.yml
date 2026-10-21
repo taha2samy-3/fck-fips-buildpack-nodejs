@@ -1,14 +1,17 @@
 name: Release
 
 # Only a pushed tag vX.Y.Z releases, and only if CHANGELOG.md has a
-# "## [X.Y.Z]" section, which becomes the release notes. It publishes everything to GHCR as signed OCI artifacts:
-#   ghcr.io/<owner>/fck-fips/{build,run,run-distroless}:X.Y.Z   stack images
+# "## [X.Y.Z]" section, which becomes the release notes. It publishes to GHCR as signed OCI artifacts:
 #   ghcr.io/<owner>/fck-fips/<buildpack>:X.Y.Z                    buildpackages
 #   ghcr.io/<owner>/fck-fips/builder-nodejs:X.Y.Z                 builder
 #   ghcr.io/<owner>/fck-fips/cnb/<buildpack>:X.Y.Z                .cnb files (oras)
 # Every digest is signed with cosign (keyless), gets SLSA v1.0 Build L3
 # provenance from slsa-github-generator and a GitHub build attestation; the
 # .cnb files and SHA256SUMS are attached to the GitHub release.
+#
+# The stack images (build, run, run-distroless) are not built here: stack.yml
+# publishes them on their own schedule, and the builder uses their :latest
+# tags, so `pack rebase` moves apps to the newest run image without a release.
 on:
   push:
     tags: ["v*.*.*"]
@@ -31,9 +34,6 @@ jobs:
     outputs:
       version: ${{ steps.version.outputs.version }}
       registry: ${{ steps.version.outputs.registry }}
-      build_digest: ${{ steps.artifacts.outputs.build_digest }}
-      run_digest: ${{ steps.artifacts.outputs.run_digest }}
-      run_distroless_digest: ${{ steps.artifacts.outputs.run_distroless_digest }}
       node_engine_digest: ${{ steps.artifacts.outputs.node_engine_digest }}
       openssl_fips_digest: ${{ steps.artifacts.outputs.openssl_fips_digest }}
       pnpm_digest: ${{ steps.artifacts.outputs.pnpm_digest }}
@@ -50,8 +50,6 @@ jobs:
         with:
           persist-credentials: false
       - uses: jdx/mise-action@fc42bcc7ddbf51124c30f95a877a0c5168a3bfde # v5.2.1
-      - uses: docker/setup-qemu-action@99012661954931238ded8c8b007157a8430204e1 # v4.4.0
-      - uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
       - uses: docker/login-action@dbcb813823bdd20940b903addbd779551569679f # v4.6.0
         with:
           registry: ghcr.io
@@ -74,24 +72,16 @@ jobs:
           echo "version=${version}" >> "$GITHUB_OUTPUT"
           echo "registry=ghcr.io/${OWNER,,}/fck-fips" >> "$GITHUB_OUTPUT"
 
-      - name: Stack images (linux/amd64, linux/arm64)
+      - name: Stack images are published
         env:
-          VERSION: ${{ steps.version.outputs.version }}
           REGISTRY: ${{ steps.version.outputs.registry }}
         run: |
-          # Reproducible layer timestamps: the same commit gives the same layers.
-          SOURCE_DATE_EPOCH="$(git log -1 --format=%ct)"
-          export SOURCE_DATE_EPOCH
           for img in build run run-distroless; do
-            docker buildx build stack \
-              --file "stack/${img}.Dockerfile" \
-              --platform linux/amd64,linux/arm64 \
-              --tag "${REGISTRY}/${img}:${VERSION}" \
-              --label "org.opencontainers.image.version=${VERSION}" \
-              --label "org.opencontainers.image.revision=${GITHUB_SHA}" \
-              --build-arg SOURCE_DATE_EPOCH \
-              --provenance=false \
-              --push
+            if ! digest="$(crane digest "${REGISTRY}/${img}:latest")"; then
+              echo "::error::${REGISTRY}/${img}:latest is missing; run the Stack images workflow first"
+              exit 1
+            fi
+            echo "${REGISTRY}/${img}:latest ${digest}"
           done
 
       - name: Buildpacks, meta buildpack and builder
@@ -128,9 +118,6 @@ jobs:
       matrix:
         # key: the output name prefix written by scripts/release-artifacts.sh
         include:
-          - { image: build, key: build }
-          - { image: run, key: run }
-          - { image: run-distroless, key: run_distroless }
           - { image: node-engine, key: node_engine }
           - { image: openssl-fips, key: openssl_fips }
           - { image: pnpm, key: pnpm }
@@ -168,9 +155,6 @@ jobs:
     strategy:
       matrix:
         include:
-          - { image: build, key: build }
-          - { image: run, key: run }
-          - { image: run-distroless, key: run_distroless }
           - { image: node-engine, key: node_engine }
           - { image: openssl-fips, key: openssl_fips }
           - { image: pnpm, key: pnpm }

@@ -27,13 +27,16 @@ description = "Unit tests with the race detector"
 run = "go test -race -count=1 ./..."
 
 [tasks.stack]
-description = "Build the build, run and run-distroless images into the local daemon"
+description = "Build the build, run and run-distroless images into the local daemon (as :latest, like the stack workflow)"
 run = """
-v=$(cat VERSION)
 for img in build run run-distroless; do
-  docker build -f stack/$img.Dockerfile -t ghcr.io/taha2samy-3/fck-fips/$img:$v stack/
+  docker build -f stack/$img.Dockerfile -t ghcr.io/taha2samy-3/fck-fips/$img:latest stack/
 done
 """
+
+[tasks.stack-changed]
+description = "Show which stack images differ from the published ones (installed packages)"
+run = "./scripts/stack.sh changed"
 
 [tasks.package]
 description = "Package every buildpack and create the builder locally"

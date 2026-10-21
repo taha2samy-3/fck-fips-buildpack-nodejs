@@ -9,6 +9,9 @@
 #   --version V     version to stamp (default: contents of VERSION)
 #   --registry R    image prefix (default: ghcr.io/taha2samy-3/fck-fips)
 #   --publish       push multi-arch images instead of building locally
+#   --stack-tag T   tag of the build and run images the builder uses
+#                   (default: latest; stack images are published separately
+#                   by .github/workflows/stack.yml, see scripts/stack.sh)
 #   --no-builder    stop after packaging the buildpacks
 set -euo pipefail
 
@@ -17,6 +20,7 @@ VERSION="$(tr -d '[:space:]' < "${ROOT}/VERSION")"
 REGISTRY="ghcr.io/taha2samy-3/fck-fips"
 PUBLISH=false
 BUILDER=true
+STACK_TAG=latest
 BUILDPACKS=(node-engine openssl-fips pnpm pnpm-install)
 
 while [[ $# -gt 0 ]]; do
@@ -24,6 +28,7 @@ while [[ $# -gt 0 ]]; do
     --version) VERSION="$2"; shift 2 ;;
     --registry) REGISTRY="$2"; shift 2 ;;
     --publish) PUBLISH=true; shift ;;
+    --stack-tag) STACK_TAG="$2"; shift 2 ;;
     --no-builder) BUILDER=false; shift ;;
     -h|--help) sed -n '2,13p' "$0"; exit 0 ;;
     *) echo "unknown option: $1" >&2; exit 1 ;;
@@ -123,8 +128,8 @@ fi
 log "Creating builder ${REGISTRY}/builder-nodejs:${VERSION}"
 sed -e "s#{{VERSION}}#${VERSION}#g" \
     -e "s#{{META_URI}}#${meta_uri}#g" \
-    -e "s#{{BUILD_IMAGE}}#${REGISTRY}/build:${VERSION}#g" \
-    -e "s#{{RUN_IMAGE}}#${REGISTRY}/run:${VERSION}#g" \
+    -e "s#{{BUILD_IMAGE}}#${REGISTRY}/build:${STACK_TAG}#g" \
+    -e "s#{{RUN_IMAGE}}#${REGISTRY}/run:${STACK_TAG}#g" \
     builder/builder.toml > "${OUT}/builder.toml"
 
 if [[ "${PUBLISH}" == true ]]; then

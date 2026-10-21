@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Runs after `scripts/package.sh --publish`. For every image the release
-# pushed (stack images, buildpacks, meta buildpack, builder) it resolves the
+# pushed (buildpacks, meta buildpack, builder) it resolves the
 # digest, signs it with cosign (keyless, GitHub OIDC) and records it for the
 # provenance attestation step. It also pushes the .cnb files as OCI artifacts
 # and writes SHA256SUMS for the GitHub release.
@@ -25,7 +25,8 @@ done
 [[ -n "${VERSION}" ]] || { echo "--version is required" >&2; exit 1; }
 
 OUT="${ROOT}/build"
-IMAGES=(build run run-distroless node-engine openssl-fips pnpm pnpm-install nodejs builder-nodejs)
+# The stack images are signed by .github/workflows/stack.yml, which publishes them.
+IMAGES=(node-engine openssl-fips pnpm pnpm-install nodejs builder-nodejs)
 : > "${OUT}/digests.txt"
 
 for name in "${IMAGES[@]}"; do

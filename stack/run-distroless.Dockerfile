@@ -2,7 +2,10 @@
 # Distroless run image: glibc, CA certificates, time zones and envoke, with no
 # shell and no package manager. Works for apps started by node-start (node
 # runs directly); npm-start and Procfile commands need the regular run image.
-# Use it with: pack build --run-image <registry>/run-distroless:<tag>
+# Use it with: pack build --run-image <registry>/run-distroless:latest
+# The installed package list stays in the image (the apk database does not):
+# the stack workflow compares it with the published image to decide whether a
+# rebuild changed anything.
 ARG BASE_IMAGE=cgr.dev/chainguard/wolfi-base:latest@sha256:81211e15a86ea1d5357f284482af45730c51de45eaf10ad9ce205d6bfc2df323
 FROM ${BASE_IMAGE} AS rootfs
 
@@ -17,6 +20,8 @@ USER root
 RUN apk add --no-cache --initdb --no-scripts --root /rootfs \
       --keys-dir /etc/apk/keys --repositories-file /etc/apk/repositories \
       ca-certificates-bundle glibc ld-linux tzdata wolfi-baselayout \
+ && mkdir -p /rootfs/usr/share/fckfips \
+ && { apk info -v --root /rootfs; echo "envoke-${ENVOKE_VERSION}"; } | sort > /rootfs/usr/share/fckfips/stack-packages.txt \
  && rm -rf /rootfs/lib/apk /rootfs/var/cache/apk /rootfs/etc/apk \
  && echo "cnb:x:${CNB_USER_ID}:${CNB_GROUP_ID}:cnb:/home/cnb:/sbin/nologin" >> /rootfs/etc/passwd \
  && echo "cnb:x:${CNB_GROUP_ID}:" >> /rootfs/etc/group \
