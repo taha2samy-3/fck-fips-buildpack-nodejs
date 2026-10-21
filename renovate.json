@@ -3,8 +3,7 @@
   "extends": [
     "config:best-practices",
     "helpers:pinGitHubActionDigestsToSemver",
-    ":semanticCommits",
-    ":maintainLockFilesWeekly"
+    ":semanticCommits"
   ],
   "description": "config:best-practices pins GitHub Actions and Docker images by digest, and pinGitHubActionDigestsToSemver keeps an exact '# vX.Y.Z' comment next to each pinned commit; updates wait 3 days so a compromised release is likely pulled before it reaches us. Renovate runs self-hosted from .github/workflows/renovate.yml.",
   "timezone": "Africa/Cairo",
@@ -18,13 +17,16 @@
   ],
   "osvVulnerabilityAlerts": true,
   "vulnerabilityAlerts": {
+    "groupName": "security updates",
+    "groupSlug": "security",
     "labels": [
       "security"
     ],
     "schedule": [
       "at any time"
     ],
-    "minimumReleaseAge": null
+    "minimumReleaseAge": null,
+    "prCreation": "immediate"
   },
   "postUpdateOptions": [
     "gomodTidy",
@@ -32,31 +34,12 @@
   ],
   "packageRules": [
     {
-      "description": "Go modules, one PR for minor and patch updates",
-      "matchManagers": [
-        "gomod"
+      "description": "Every regular update in one pull request, majors included",
+      "matchPackageNames": [
+        "*"
       ],
-      "matchUpdateTypes": [
-        "minor",
-        "patch",
-        "digest"
-      ],
-      "groupName": "go modules"
-    },
-    {
-      "description": "Go toolchain: go.mod and mise.toml move together",
-      "matchDepNames": [
-        "go",
-        "golang"
-      ],
-      "groupName": "go toolchain"
-    },
-    {
-      "description": "GitHub Actions, pinned by commit SHA",
-      "matchManagers": [
-        "github-actions"
-      ],
-      "groupName": "github actions"
+      "groupName": "all dependencies",
+      "groupSlug": "all"
     },
     {
       "description": "slsa-github-generator verifies its own ref: it must stay on a tag, not a digest",
@@ -67,42 +50,6 @@
         "slsa-framework/slsa-github-generator"
       ],
       "pinDigests": false
-    },
-    {
-      "description": "Paketo buildpacks bundled in the meta buildpack: buildpack.toml and package.toml must change together (enforced by buildpacks/nodejs/meta_test.go)",
-      "matchFileNames": [
-        "buildpacks/nodejs/**"
-      ],
-      "groupName": "paketo buildpacks"
-    },
-    {
-      "description": "Stack base image digests",
-      "matchFileNames": [
-        "stack/**"
-      ],
-      "groupName": "stack base images"
-    },
-    {
-      "description": "Tools pinned in mise.toml",
-      "matchManagers": [
-        "mise"
-      ],
-      "groupName": "mise tools"
-    },
-    {
-      "description": "Documentation site dependencies",
-      "matchFileNames": [
-        "docs/**"
-      ],
-      "groupName": "docs"
-    },
-    {
-      "description": "Renovate itself: the github-action and the image it runs, kept in step",
-      "matchPackageNames": [
-        "renovatebot/github-action",
-        "ghcr.io/renovatebot/renovate"
-      ],
-      "groupName": "renovate"
     }
   ],
   "customManagers": [
@@ -154,5 +101,6 @@
         "# renovate: datasource=(?<datasource>\\S+) depName=(?<depName>\\S+)\\s+[A-Z0-9_]+_VERSION:\\s*\"?(?<currentValue>[^@\"\\s]+)(?:@(?<currentDigest>sha256:[a-f0-9]{64}))?\"?"
       ]
     }
-  ]
+  ],
+  "separateMajorMinor": false
 }
