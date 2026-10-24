@@ -34,7 +34,7 @@
   ],
   "packageRules": [
     {
-      "description": "Every regular update in one pull request, majors included",
+      "description": "Every regular update (minor, patch, digest) in one pull request",
       "matchPackageNames": [
         "*"
       ],
@@ -50,6 +50,13 @@
         "slsa-framework/slsa-github-generator"
       ],
       "pinDigests": false
+    },
+    {
+      "description": "No major updates: they are done by hand",
+      "matchUpdateTypes": [
+        "major"
+      ],
+      "enabled": false
     }
   ],
   "customManagers": [
@@ -101,6 +108,5 @@
         "# renovate: datasource=(?<datasource>\\S+) depName=(?<depName>\\S+)\\s+[A-Z0-9_]+_VERSION:\\s*\"?(?<currentValue>[^@\"\\s]+)(?:@(?<currentDigest>sha256:[a-f0-9]{64}))?\"?"
       ]
     }
-  ],
-  "separateMajorMinor": false
+  ]
 }
