@@ -6,7 +6,7 @@ const builder = `ghcr.io/taha2samy-3/fck-fips/builder-nodejs:${version}`;
 const steps = [
   ['Detect', 'BP_OPENSSL_FIPS=true makes openssl-fips pass detection, and makes node-engine require it. A builder without openssl-fips fails here instead of building an image without the module.'],
   ['Install the module', 'openssl-fips downloads openssl-provider-fips-3.1.2 from taha2samy-3.github.io/node/apk and checks it against the signed index (embedded key), its control checksum and its data hash. fips.so and fipsmodule.cnf are used exactly as built; nothing edits them.'],
-  ['Configure OpenSSL', 'A generated openssl.cnf loads only the FIPS and base providers, sets default_properties = fips=yes, requires TLS 1.2 or later, and turns provider errors into fatal errors (config_diagnostics = 1). OPENSSL_CONF and OPENSSL_MODULES point at it at launch.'],
+  ['Configure OpenSSL', 'A generated openssl.cnf loads only the FIPS and base providers, sets default_properties = fips=yes, requires TLS 1.2 or later with key exchange on P-256, P-384 or P-521, and turns provider errors into fatal errors (config_diagnostics = 1). OPENSSL_CONF and OPENSSL_MODULES point at it at launch.'],
   ['Verify at build time', 'node-engine runs the installed node under that configuration with --force-fips: crypto.getFips() must be 1, SHA-256 must work and MD5 must be refused. If not, the build fails.'],
   ['Run', 'At every start the module runs its known-answer self tests and integrity check. node starts with --force-fips; a module that fails its checks stops node from starting.'],
 ];
@@ -53,14 +53,50 @@ const steps = [
 
   <section class="reveal">
     <h2 data-n="3">Check a running container</h2>
-    <pre><code>{`docker run --rm my-app node -p "require('crypto').getFips()"          # 1
-docker run --rm my-app node -e "require('crypto').createHash('md5')"  # error: unsupported
+    <pre><code>{`docker run --rm --entrypoint launcher my-app -- node -p "require('crypto').getFips()"          # 1
+docker run --rm --entrypoint launcher my-app -- node -e "require('crypto').createHash('md5')"  # error: unsupported
 docker inspect my-app --format '{{ index .Config.Labels "io.fckfips.openssl-fips.certificate" }}'  # #4985`}</code></pre>
-    <p>The image also carries <code>io.fckfips.openssl-fips.module</code> and <code>io.fckfips.openssl-fips.package</code> labels, and the provider layer has its own SBOM.</p>
+    <p>
+      Commands go through the launcher, which sets up FIPS mode: <code>docker run my-app node ...</code> would pass{' '}
+      <code>node ...</code> as arguments to the app's start command. The image also carries{' '}
+      <code>io.fckfips.openssl-fips.module</code> and <code>io.fckfips.openssl-fips.package</code> labels, and the
+      provider layer has its own SBOM.
+    </p>
   </section>
 
   <section class="reveal">
-    <h2 data-n="4">Operational environment</h2>
+    <h2 data-n="4">What your code is responsible for</h2>
+    <p>
+      FIPS mode cannot be switched off from inside the container: <code>crypto.setFips(false)</code>, an empty or
+      replaced <code>NODE_OPTIONS</code>, <code>OPENSSL_CONF</code> or <code>OPENSSL_MODULES</code>, and{' '}
+      <code>--no-force-fips</code> all leave it on, worker threads and child <code>node</code> processes inherit it, and a
+      changed <code>fips.so</code> stops node from starting. MD5, MD4, RIPEMD-160, DES and Triple-DES, RC4, Blowfish,
+      ChaCha20, Camellia, scrypt, Ed25519, Ed448, secp256k1 and RSA keys under 2048 bits are refused. What the
+      configuration cannot do:
+    </p>
+    <ul>
+      <li>
+        <strong>X25519 and X448 still work when asked for by name.</strong> The 3.1.2 module offers them, but its
+        Security Policy lists them as non-approved. TLS is restricted to the P-256, P-384 and P-521 curves, so they are
+        not negotiated by default; do not set <code>ecdhCurve: 'X25519'</code> or generate <code>x25519</code> keys.
+      </li>
+      <li>
+        <strong>PBKDF2 minimums are not enforced.</strong> <code>crypto.pbkdf2</code> uses OpenSSL's PKCS#5 interface,
+        which skips the module's SP 800-132 checks. Use a salt of at least 16 bytes, at least 1,000 iterations (far more
+        in practice) and an output of at least 14 bytes, and only for storage applications.
+      </li>
+      <li>
+        <strong>Only OpenSSL is covered.</strong> Cryptography that does not call <code>node:crypto</code> bypasses the
+        module: native addons with their own code (<code>bcrypt</code>, <code>argon2</code>, <code>sodium-native</code>)
+        and pure JavaScript libraries (<code>bcryptjs</code>, <code>crypto-js</code>, <code>tweetnacl</code>,{' '}
+        <code>@noble/*</code>). bcrypt and Argon2 are not FIPS-approved; PBKDF2-HMAC-SHA-256 is the approved choice for
+        password hashing.
+      </li>
+    </ul>
+  </section>
+
+  <section class="reveal">
+    <h2 data-n="5">Operational environment</h2>
     <p>
       A FIPS 140-3 certificate lists the operational environments the module was tested on. For #4985 those are
       Ubuntu 22.04, Debian 11, FreeBSD 13.1, Windows 10 and macOS 11 on x86_64, and macOS 11 on Apple M1. Wolfi is not
@@ -75,7 +111,7 @@ docker inspect my-app --format '{{ index .Config.Labels "io.fckfips.openssl-fips
   </section>
 
   <section class="reveal">
-    <h2 data-n="5">How the module package is built</h2>
+    <h2 data-n="6">How the module package is built</h2>
     <p>
       The provider package is built in <a href="https://github.com/taha2samy-3/node">taha2samy-3/node</a> with melange,
       following section 11.1 of the security policy: the openssl-3.1.2 source named in the policy, checked against its

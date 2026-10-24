@@ -12,10 +12,19 @@ All notable changes to this project are documented here. The format follows
 
 ### Security
 
+- FIPS mode restricts TLS key exchange to the P-256, P-384 and P-521
+  curves. OpenSSL negotiated X25519 by default, which the OpenSSL FIPS
+  Provider 3.1.2 offers but its Security Policy lists as non-approved.
 - The buildpacks are built with Go 1.26.10 and `golang.org/x/net` 0.60.0,
   fixing 11 vulnerabilities in the standard library and `x/net` (HTTP,
   TLS and certificate handling) that `govulncheck` showed the buildpacks'
   download code could reach.
+
+### Fixed
+
+- The FIPS docs ran checks with `docker run my-app node ...`, which passes
+  the command to the app's start process; they now use the launcher. The
+  FIPS page now lists what applications remain responsible for.
 
 ### Changed
 

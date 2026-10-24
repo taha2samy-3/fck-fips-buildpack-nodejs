@@ -50,6 +50,7 @@ func TestRenderConfig(t *testing.T) {
 		"base = base_sect",
 		"default_properties = fips=yes",
 		"MinProtocol = TLSv1.2",
+		"Groups = P-256:P-384:P-521",
 	} {
 		if !strings.Contains(cnf, want) {
 			t.Errorf("openssl.cnf lacks %q", want)

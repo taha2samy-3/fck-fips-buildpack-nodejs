@@ -50,6 +50,10 @@ system_default = tls_policy
 # TLS 1.2 is the lowest version allowed for federal systems (NIST SP 800-52 Rev. 2)
 [tls_policy]
 MinProtocol = TLSv1.2
+# Key exchange on NIST curves only. The 3.1.2 module offers X25519 and X448
+# under fips=yes, but its Security Policy lists them as non-approved, and
+# OpenSSL would otherwise negotiate X25519 first.
+Groups = P-256:P-384:P-521
 `))
 
 func renderConfig(module, fipsModuleConf string) ([]byte, error) {
