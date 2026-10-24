@@ -153,6 +153,9 @@ jobs:
       id-token: write
       packages: write
     strategy:
+      # The generator downloads cosign on every leg; one failed download must
+      # not cancel the others, so a re-run of failed jobs is enough.
+      fail-fast: false
       matrix:
         include:
           - { image: node-engine, key: node_engine }
