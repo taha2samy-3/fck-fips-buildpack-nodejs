@@ -8,6 +8,15 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+## [1.0.1] - 2026-10-24
+
+### Security
+
+- The buildpacks are built with Go 1.26.10 and `golang.org/x/net` 0.60.0,
+  fixing 11 vulnerabilities in the standard library and `x/net` (HTTP,
+  TLS and certificate handling) that `govulncheck` showed the buildpacks'
+  download code could reach.
+
 ### Changed
 
 - The stack images (`build`, `run`, `run-distroless`) are published by their
@@ -23,6 +32,11 @@ All notable changes to this project are documented here. The format follows
   versions without breaking tags: per-architecture manifests of multi-arch
   images, and attestations, signatures and SBOMs of kept images, are never
   deleted; neither is anything younger than 72 hours or unreadable.
+- Self-hosted Renovate, authenticated as a GitHub App, with every update
+  pinned by digest: one pull request for regular updates, a separate one for
+  security fixes, and no major updates.
+- A Usage page in the documentation, with a versions list generated from
+  this changelog.
 
 ## [1.0.0] - 2026-10-21
 
@@ -69,5 +83,6 @@ Rewrite of the Python buildpacks and the Paketo forks as one Go project.
 - Node.js debugging with `BPL_DEBUG_ENABLED` (the minimal flavor had no
   inspector).
 
-[Unreleased]: https://github.com/taha2samy-3/fck-fips-buildpack-nodejs/compare/v1.0.0...HEAD
+[Unreleased]: https://github.com/taha2samy-3/fck-fips-buildpack-nodejs/compare/v1.0.1...HEAD
+[1.0.1]: https://github.com/taha2samy-3/fck-fips-buildpack-nodejs/compare/v1.0.0...v1.0.1
 [1.0.0]: https://github.com/taha2samy-3/fck-fips-buildpack-nodejs/releases/tag/v1.0.0

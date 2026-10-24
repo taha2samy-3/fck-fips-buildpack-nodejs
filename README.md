@@ -20,8 +20,8 @@
 ---
 
 ```sh
-pack build my-app --builder ghcr.io/taha2samy-3/fck-fips/builder-nodejs:1.0.0
-pack build my-app --builder ghcr.io/taha2samy-3/fck-fips/builder-nodejs:1.0.0 --env BP_OPENSSL_FIPS=true
+pack build my-app --builder ghcr.io/taha2samy-3/fck-fips/builder-nodejs:1.0.1
+pack build my-app --builder ghcr.io/taha2samy-3/fck-fips/builder-nodejs:1.0.1 --env BP_OPENSSL_FIPS=true
 ```
 
 The builder detects pnpm, yarn or npm from the lockfile, takes the Node.js version from `engines.node`,

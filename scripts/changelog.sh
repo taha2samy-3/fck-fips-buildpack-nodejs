@@ -3,7 +3,7 @@
 # Fails when the section is missing or empty, so a release cannot go out
 # undocumented.
 #
-#   scripts/changelog.sh 1.0.0
+#   scripts/changelog.sh 1.0.1
 set -euo pipefail
 
 version="${1:?usage: changelog.sh <version>}"
