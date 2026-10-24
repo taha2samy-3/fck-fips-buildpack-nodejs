@@ -79,6 +79,22 @@ value = "build"`}</code></pre>
 - run: |
     pack build ghcr.io/\${{ github.repository }}:\${{ github.sha }} \\
       --builder ${builder} --publish`}</code></pre>
+
+    <h3>Run another command in the image</h3>
+    <p>
+      Go through the CNB launcher: it puts the layers' libraries on the library path and sets <code>ICU_DATA</code>,{' '}
+      <code>NODE_OPTIONS</code> and, in FIPS mode, <code>OPENSSL_CONF</code>. The <code>--</code> runs the command
+      directly, without a shell.
+    </p>
+    <pre><code>{`docker run --rm --entrypoint launcher my-app -- node scripts/migrate.js
+docker run --rm my-app                      # the default process`}</code></pre>
+    <div class="callout">
+      <p class="title">Do not point --entrypoint at node itself</p>
+      <p>
+        <code>--entrypoint /layers/fckfips_node-engine/node/bin/node</code> skips the launcher, so node cannot find its
+        libraries (<code>libuv.so.1: cannot open shared object file</code>), and if it could, FIPS mode would be off.
+      </p>
+    </div>
   </section>
 
   <section class="reveal">
