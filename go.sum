@@ -786,8 +786,8 @@ github.com/opencontainers/runtime-spec v1.3.0/go.mod h1:jwyrGlmzljRJv/Fgzds9SsS/
 github.com/opencontainers/selinux v1.15.1 h1:ERxeh5caJvCzNAKdI8WQbJmB1LDTn4BuaAg8wihLBpA=
 github.com/opencontainers/selinux v1.15.1/go.mod h1:LenyElirjUHszfxrjuFqC85HIeXZKumHcKMQtnaDlQQ=
 github.com/orisano/pixelmatch v0.0.0-20220722002657-fb0b55479cde/go.mod h1:nZgzbfBr3hhjoZnS66nKrHmduYNpc34ny7RK4z5/HM0=
-github.com/paketo-buildpacks/libnodejs v0.4.3 h1:jVIscdU8j8XhjnVkQw0q9uOwO+V/pI0b+riAeDMdR1Q=
-github.com/paketo-buildpacks/libnodejs v0.4.3/go.mod h1:aqEc7+NFTwxNqk0m8LTOSRYTL8DR1FPJh8NpscoRo6k=
+github.com/paketo-buildpacks/libnodejs v0.5.0 h1:sKg8J9Wp3oMyNAod8vEuRZuJrP2uOF8uYKSFU8JJ1sQ=
+github.com/paketo-buildpacks/libnodejs v0.5.0/go.mod h1:04zJPJVNCxNvLpljlYGi2755i6sIWlNh4Jm0/OmeDG4=
 github.com/paketo-buildpacks/packit/v2 v2.25.8 h1:2NSZrd93cN27J4XXgVXyscXUGUkFanbzDVpKIYu6j50=
 github.com/paketo-buildpacks/packit/v2 v2.25.8/go.mod h1:GXZDiF4DFZTwcxmy52u6IP2xDsmpT2394tYosmNFcGk=
 github.com/pascaldekloe/goe v0.0.0-20180627143212-57f6aae5913c/go.mod h1:lzWF7FIEvWOWxwDKqyGYQf6ZUaNfKdP144TG7ZOy1lc=
