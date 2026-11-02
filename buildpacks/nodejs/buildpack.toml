@@ -20,17 +20,17 @@ api = "0.10"
 
   [[order.group]]
     id = "paketo-buildpacks/ca-certificates"
-    version = "3.14.2"
+    version = "3.14.4"
     optional = true
 
   [[order.group]]
     id = "paketo-buildpacks/watchexec"
-    version = "3.11.3"
+    version = "3.11.5"
     optional = true
 
   [[order.group]]
     id = "paketo-buildpacks/tini"
-    version = "0.4.12"
+    version = "0.4.14"
     optional = true
 
   [[order.group]]
@@ -52,32 +52,32 @@ api = "0.10"
 
   [[order.group]]
     id = "paketo-buildpacks/node-run-script"
-    version = "2.3.57"
+    version = "2.3.59"
     optional = true
 
   [[order.group]]
     id = "paketo-buildpacks/node-start"
-    version = "2.7.10"
+    version = "2.7.12"
     optional = true
 
   [[order.group]]
     id = "paketo-buildpacks/npm-start"
-    version = "2.5.10"
+    version = "2.5.12"
     optional = true
 
   [[order.group]]
     id = "paketo-buildpacks/procfile"
-    version = "5.15.4"
+    version = "5.15.6"
     optional = true
 
   [[order.group]]
     id = "paketo-buildpacks/environment-variables"
-    version = "4.12.0"
+    version = "4.12.1"
     optional = true
 
   [[order.group]]
     id = "paketo-buildpacks/image-labels"
-    version = "4.14.3"
+    version = "4.14.5"
     optional = true
 
 # yarn: yarn.lock
@@ -85,17 +85,17 @@ api = "0.10"
 
   [[order.group]]
     id = "paketo-buildpacks/ca-certificates"
-    version = "3.14.2"
+    version = "3.14.4"
     optional = true
 
   [[order.group]]
     id = "paketo-buildpacks/watchexec"
-    version = "3.11.3"
+    version = "3.11.5"
     optional = true
 
   [[order.group]]
     id = "paketo-buildpacks/tini"
-    version = "0.4.12"
+    version = "0.4.14"
     optional = true
 
   [[order.group]]
@@ -109,40 +109,40 @@ api = "0.10"
 
   [[order.group]]
     id = "paketo-buildpacks/yarn"
-    version = "2.5.2"
+    version = "2.5.4"
 
   [[order.group]]
     id = "paketo-buildpacks/yarn-install"
-    version = "2.7.26"
+    version = "2.7.28"
 
   [[order.group]]
     id = "paketo-buildpacks/node-run-script"
-    version = "2.3.57"
+    version = "2.3.59"
     optional = true
 
   [[order.group]]
     id = "paketo-buildpacks/node-start"
-    version = "2.7.10"
+    version = "2.7.12"
     optional = true
 
   [[order.group]]
     id = "paketo-buildpacks/yarn-start"
-    version = "2.5.40"
+    version = "2.5.42"
     optional = true
 
   [[order.group]]
     id = "paketo-buildpacks/procfile"
-    version = "5.15.4"
+    version = "5.15.6"
     optional = true
 
   [[order.group]]
     id = "paketo-buildpacks/environment-variables"
-    version = "4.12.0"
+    version = "4.12.1"
     optional = true
 
   [[order.group]]
     id = "paketo-buildpacks/image-labels"
-    version = "4.14.3"
+    version = "4.14.5"
     optional = true
 
 # npm: package.json
@@ -150,17 +150,17 @@ api = "0.10"
 
   [[order.group]]
     id = "paketo-buildpacks/ca-certificates"
-    version = "3.14.2"
+    version = "3.14.4"
     optional = true
 
   [[order.group]]
     id = "paketo-buildpacks/watchexec"
-    version = "3.11.3"
+    version = "3.11.5"
     optional = true
 
   [[order.group]]
     id = "paketo-buildpacks/tini"
-    version = "0.4.12"
+    version = "0.4.14"
     optional = true
 
   [[order.group]]
@@ -174,36 +174,36 @@ api = "0.10"
 
   [[order.group]]
     id = "paketo-buildpacks/npm-install"
-    version = "2.3.32"
+    version = "2.3.34"
 
   [[order.group]]
     id = "paketo-buildpacks/node-run-script"
-    version = "2.3.57"
+    version = "2.3.59"
     optional = true
 
   [[order.group]]
     id = "paketo-buildpacks/node-start"
-    version = "2.7.10"
+    version = "2.7.12"
     optional = true
 
   [[order.group]]
     id = "paketo-buildpacks/npm-start"
-    version = "2.5.10"
+    version = "2.5.12"
     optional = true
 
   [[order.group]]
     id = "paketo-buildpacks/procfile"
-    version = "5.15.4"
+    version = "5.15.6"
     optional = true
 
   [[order.group]]
     id = "paketo-buildpacks/environment-variables"
-    version = "4.12.0"
+    version = "4.12.1"
     optional = true
 
   [[order.group]]
     id = "paketo-buildpacks/image-labels"
-    version = "4.14.3"
+    version = "4.14.5"
     optional = true
 
 # no package manager: server.js, app.js, main.js, index.js or BP_LAUNCHPOINT
@@ -211,17 +211,17 @@ api = "0.10"
 
   [[order.group]]
     id = "paketo-buildpacks/ca-certificates"
-    version = "3.14.2"
+    version = "3.14.4"
     optional = true
 
   [[order.group]]
     id = "paketo-buildpacks/watchexec"
-    version = "3.11.3"
+    version = "3.11.5"
     optional = true
 
   [[order.group]]
     id = "paketo-buildpacks/tini"
-    version = "0.4.12"
+    version = "0.4.14"
     optional = true
 
   [[order.group]]
@@ -235,19 +235,19 @@ api = "0.10"
 
   [[order.group]]
     id = "paketo-buildpacks/node-start"
-    version = "2.7.10"
+    version = "2.7.12"
 
   [[order.group]]
     id = "paketo-buildpacks/procfile"
-    version = "5.15.4"
+    version = "5.15.6"
     optional = true
 
   [[order.group]]
     id = "paketo-buildpacks/environment-variables"
-    version = "4.12.0"
+    version = "4.12.1"
     optional = true
 
   [[order.group]]
     id = "paketo-buildpacks/image-labels"
-    version = "4.14.3"
+    version = "4.14.5"
     optional = true
