@@ -1,4 +1,4 @@
-# syntax=docker/dockerfile:1
+# syntax=docker/dockerfile:1@sha256:4edf897a3ffa55b89f906fc8cc78afdb3f1834cc9c7083565e611a8a7d5fe99e
 # Distroless run image: glibc, CA certificates, time zones and envoke, with no
 # shell and no package manager. Works for apps started by node-start (node
 # runs directly); npm-start and Procfile commands need the regular run image.
