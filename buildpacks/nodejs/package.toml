@@ -5,43 +5,43 @@
   uri = "."
 
 [[dependencies]]
-  uri = "docker://docker.io/paketobuildpacks/ca-certificates:3.14.4"
+  uri = "docker://docker.io/paketobuildpacks/ca-certificates:3.14.6"
 
 [[dependencies]]
-  uri = "docker://docker.io/paketobuildpacks/environment-variables:4.12.1"
+  uri = "docker://docker.io/paketobuildpacks/environment-variables:4.12.3"
 
 [[dependencies]]
-  uri = "docker://docker.io/paketobuildpacks/image-labels:4.14.5"
+  uri = "docker://docker.io/paketobuildpacks/image-labels:4.14.7"
 
 [[dependencies]]
-  uri = "docker://docker.io/paketobuildpacks/node-run-script:2.3.59"
+  uri = "docker://docker.io/paketobuildpacks/node-run-script:2.3.61"
 
 [[dependencies]]
-  uri = "docker://docker.io/paketobuildpacks/node-start:2.7.12"
+  uri = "docker://docker.io/paketobuildpacks/node-start:2.7.14"
 
 [[dependencies]]
-  uri = "docker://docker.io/paketobuildpacks/npm-install:2.3.34"
+  uri = "docker://docker.io/paketobuildpacks/npm-install:2.3.37"
 
 [[dependencies]]
-  uri = "docker://docker.io/paketobuildpacks/npm-start:2.5.12"
+  uri = "docker://docker.io/paketobuildpacks/npm-start:2.5.14"
 
 [[dependencies]]
-  uri = "docker://docker.io/paketobuildpacks/procfile:5.15.6"
+  uri = "docker://docker.io/paketobuildpacks/procfile:5.15.8"
 
 [[dependencies]]
-  uri = "docker://docker.io/paketobuildpacks/tini:0.4.14"
+  uri = "docker://docker.io/paketobuildpacks/tini:0.4.16"
 
 [[dependencies]]
-  uri = "docker://docker.io/paketobuildpacks/watchexec:3.11.5"
+  uri = "docker://docker.io/paketobuildpacks/watchexec:3.11.7"
 
 [[dependencies]]
-  uri = "docker://docker.io/paketobuildpacks/yarn:2.5.4"
+  uri = "docker://docker.io/paketobuildpacks/yarn:2.5.6"
 
 [[dependencies]]
-  uri = "docker://docker.io/paketobuildpacks/yarn-install:2.7.28"
+  uri = "docker://docker.io/paketobuildpacks/yarn-install:2.7.30"
 
 [[dependencies]]
-  uri = "docker://docker.io/paketobuildpacks/yarn-start:2.5.42"
+  uri = "docker://docker.io/paketobuildpacks/yarn-start:2.5.44"
 
 [[targets]]
   os = "linux"
