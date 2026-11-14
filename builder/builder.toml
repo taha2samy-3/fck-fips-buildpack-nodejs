@@ -16,7 +16,7 @@ description = "fck-fips Node.js builder: Wolfi base images, Node.js from signed 
   image = "{{RUN_IMAGE}}"
 
 [lifecycle]
-  version = "0.21.26"
+  version = "0.21.28"
 
 [[targets]]
   os = "linux"
